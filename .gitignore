@@ -373,3 +373,8 @@ Environment.props
 
 # not the generated dll for thunderstore
 */Package/plugins/*
+
+# Valheim and BepInEx assemblies copied into the Unity project for local development
+/JotunnModStubUnity/Assets/Assemblies/*.dll
+/JotunnModStubUnity/Assets/Assemblies/*.pdb
+/JotunnModStubUnity/Assets/Assemblies/*.mdb
