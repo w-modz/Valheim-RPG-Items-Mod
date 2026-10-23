@@ -7,7 +7,7 @@ namespace JotunnModStub
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     [BepInDependency(Jotunn.Main.ModGuid)]
     //[NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
-    internal class JotunnModStub : BaseUnityPlugin
+    internal partial class JotunnModStub : BaseUnityPlugin
     {
         public const string PluginGUID = "com.jotunn.jotunnmodstub";
         public const string PluginName = "JotunnModStub";
@@ -24,6 +24,11 @@ namespace JotunnModStub
             
             // To learn more about Jotunn's features, go to
             // https://valheim-modding.github.io/Jotunn/tutorials/overview.html
+
+            CommandManager.Instance.AddConsoleCommand(new BetterSpawnCommand());
+            CommandManager.Instance.AddConsoleCommand(new HelloCommand());
+
+            PrefabManager.OnVanillaPrefabsAvailable += AddClonedItems;
         }
     }
 }
