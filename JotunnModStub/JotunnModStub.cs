@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using HarmonyLib;
 using Jotunn.Entities;
 using Jotunn.Managers;
 
@@ -9,26 +10,26 @@ namespace JotunnModStub
     //[NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     internal partial class JotunnModStub : BaseUnityPlugin
     {
-        public const string PluginGUID = "com.jotunn.jotunnmodstub";
-        public const string PluginName = "JotunnModStub";
-        public const string PluginVersion = "0.0.1";
+        public const string PluginGUID = "com.izzemi.myfirstmod";
+        public const string PluginName = "Izzemi's Mod";
+        public const string PluginVersion = "0.1.0";
         
         // Use this class to add your own localization to the game
         // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
-        public static CustomLocalization Localization = LocalizationManager.Instance.GetLocalization();
+        public static CustomLocalization ModLocalization = LocalizationManager.Instance.GetLocalization();
 
         private void Awake()
         {
-            // Jotunn comes with its own Logger class to provide a consistent Log style for all mods using it
-            Jotunn.Logger.LogInfo("ModStub has landed");
-            
-            // To learn more about Jotunn's features, go to
-            // https://valheim-modding.github.io/Jotunn/tutorials/overview.html
+            // Log to console and file that the mod has loaded
+            Jotunn.Logger.LogInfo("Izzemi's Mod has landed");
 
-            CommandManager.Instance.AddConsoleCommand(new BetterSpawnCommand());
-            CommandManager.Instance.AddConsoleCommand(new HelloCommand());
+            new Harmony(PluginGUID).PatchAll();
 
-            PrefabManager.OnVanillaPrefabsAvailable += AddClonedItems;
+            CommandManager.Instance.AddConsoleCommand(new DumpItemDataCommand());
+            CommandManager.Instance.AddConsoleCommand(new InitializeVariantDataCommand());
+
+            // Add custom items
+            PrefabManager.OnVanillaPrefabsAvailable += AddItemVariants;
         }
     }
 }
