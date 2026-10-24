@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
-namespace JotunnModStub
+namespace IzzemisMod
 {
     // Stores one modifier's identifier and rolled value on an item.
     [Serializable]
@@ -33,13 +33,40 @@ namespace JotunnModStub
     // Reads and writes item metadata in an item's custom data dictionary.
     internal static class ItemModifierDataStore
     {
+        // Keep this stable so existing item metadata survives the mod identity rename.
         private const string CustomDataPrefix = "com.izzemi.myfirstmod.variant";
         private const string LegacyCustomDataKey = CustomDataPrefix;
         private const string VersionKey = CustomDataPrefix + ".version";
         private const string RarityKey = CustomDataPrefix + ".rarity";
         private const string ModifierKeyPrefix = CustomDataPrefix + ".modifier.";
-        internal const string SlashDamageModifierId = "bonus_slash_damage";
-        internal const float TestSlashDamageBonus = 2.0f;
+
+        public static bool TryGetRarityId(ItemDrop.ItemData item, out string rarityId)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            rarityId = null;
+            if (item.m_customData == null)
+            {
+                return false;
+            }
+
+            if (item.m_customData.TryGetValue(RarityKey, out rarityId))
+            {
+                return !string.IsNullOrWhiteSpace(rarityId);
+            }
+
+            if (!TryLoad(item, out ItemModifierData data) ||
+                string.IsNullOrWhiteSpace(data.RarityId))
+            {
+                return false;
+            }
+
+            rarityId = data.RarityId;
+            return true;
+        }
 
         public static void Clear(ItemDrop.ItemData item)
         {
@@ -97,9 +124,6 @@ namespace JotunnModStub
         // Stores variant metadata as separate persistent item custom-data entries.
         public static void Save(ItemDrop.ItemData item, ItemModifierData data)
         {
-            Jotunn.Logger.LogInfo(
-                $"ItemModifierDataStore.Save called for '{item?.m_dropPrefab?.name ?? "<null>"}'.");
-
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -152,9 +176,6 @@ namespace JotunnModStub
         // Loads variant metadata, supporting the previous JSON format for existing items.
         public static bool TryLoad(ItemDrop.ItemData item, out ItemModifierData data)
         {
-            Jotunn.Logger.LogInfo(
-                $"ItemModifierDataStore.TryLoad called for '{item?.m_dropPrefab?.name ?? "<null>"}'.");
-
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -191,6 +212,7 @@ namespace JotunnModStub
             }
 
             var modifiers = new List<ModifierRoll>();
+            var invalidModifierKeys = new List<string>();
             foreach (KeyValuePair<string, string> entry in item.m_customData)
             {
                 if (!entry.Key.StartsWith(ModifierKeyPrefix, StringComparison.Ordinal))
@@ -199,6 +221,12 @@ namespace JotunnModStub
                 }
 
                 string modifierId = entry.Key.Substring(ModifierKeyPrefix.Length);
+                if (!ModifierCatalog.TryGetById(modifierId, out _))
+                {
+                    invalidModifierKeys.Add(entry.Key);
+                    continue;
+                }
+
                 if (float.TryParse(entry.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float value))
                 {
                     modifiers.Add(new ModifierRoll { Id = modifierId, Value = value });
@@ -207,7 +235,13 @@ namespace JotunnModStub
                 {
                     Jotunn.Logger.LogError(
                         $"Invalid saved value '{entry.Value}' for variant modifier '{modifierId}'.");
+                    invalidModifierKeys.Add(entry.Key);
                 }
+            }
+
+            foreach (string key in invalidModifierKeys)
+            {
+                item.m_customData.Remove(key);
             }
 
             data.Modifiers = modifiers.ToArray();

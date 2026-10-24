@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Jotunn.Entities;
 using Jotunn.Managers;
 
-namespace JotunnModStub
+namespace IzzemisMod
 {
     internal static class ModCommands
     {
@@ -58,12 +59,31 @@ namespace JotunnModStub
             return true;
         }
 
+        private static bool TryGetModifierDefinition(
+            string commandName,
+            out ModifierDefinition definition)
+        {
+            if (ModifierCatalog.TryGetByCommandName(commandName.Trim(), out definition))
+            {
+                return true;
+            }
+
+            global::Console.instance.Print(
+                $"Unknown modifier. Available modifiers: {string.Join(", ", ModifierCatalog.GetCommandOptions())}.");
+            return false;
+        }
+
         private sealed class SetRarityCommand : ConsoleCommand
         {
             public override string Name => "set_rarity";
 
             public override string Help =>
                 "Sets the held weapon's rarity. Usage: set_rarity <rarity> (use 0 to clear rarity and modifiers).";
+
+            public override List<string> CommandOptionList()
+            {
+                return ItemRarityCatalog.GetCommandOptions();
+            }
 
             public override void Run(string[] args)
             {
@@ -73,15 +93,23 @@ namespace JotunnModStub
                     return;
                 }
 
+                string rarity = args[0].Trim().ToLowerInvariant();
+                if (rarity != "0" && !ItemRarityCatalog.TryGet(rarity, out _))
+                {
+                    global::Console.instance.Print(
+                        $"Invalid rarity '{args[0]}'. Valid rarities are magic, rare, and epic; use 0 to remove rarity and modifiers.");
+                    return;
+                }
+
                 if (!TryGetHeldWeapon(out ItemDrop.ItemData item))
                 {
                     return;
                 }
 
-                string rarity = args[0].Trim().ToLowerInvariant();
                 if (rarity == "0")
                 {
                     ItemModifierDataStore.Clear(item);
+                    ItemRarityVisuals.RefreshEquippedGlow(Player.m_localPlayer);
                     global::Console.instance.Print(
                         "Cleared rarity and modifiers from the held item.");
                     return;
@@ -94,6 +122,7 @@ namespace JotunnModStub
 
                 data.RarityId = rarity;
                 ItemModifierDataStore.Save(item, data);
+                ItemRarityVisuals.RefreshEquippedGlow(Player.m_localPlayer);
                 global::Console.instance.Print(
                     $"Set held item rarity to '{data.RarityId}'.");
             }
@@ -104,7 +133,12 @@ namespace JotunnModStub
             public override string Name => "modifier";
 
             public override string Help =>
-                "Adds a modifier to the held weapon. Usage: modifier slash_damage (currently +200% slash damage).";
+                "Adds a modifier to the held weapon. Use autocomplete to see available modifiers.";
+
+            public override List<string> CommandOptionList()
+            {
+                return ModifierCatalog.GetCommandOptions();
+            }
 
             public override void Run(string[] args)
             {
@@ -114,19 +148,12 @@ namespace JotunnModStub
                     return;
                 }
 
-                string modifierId = args[0].Trim().ToLowerInvariant();
-                if (modifierId == "slash_damage")
+                if (!TryGetModifierDefinition(args[0], out ModifierDefinition definition))
                 {
-                    modifierId = ItemModifierDataStore.SlashDamageModifierId;
-                }
-
-                if (modifierId != ItemModifierDataStore.SlashDamageModifierId)
-                {
-                    global::Console.instance.Print(
-                        "Unknown modifier. Available modifier: slash_damage.");
                     return;
                 }
 
+                string modifierId = definition.Id;
                 if (!TryGetHeldWeapon(out ItemDrop.ItemData item))
                 {
                     return;
@@ -153,7 +180,7 @@ namespace JotunnModStub
                 updatedModifiers[updatedModifiers.Length - 1] = new ModifierRoll
                 {
                     Id = modifierId,
-                    Value = ItemModifierDataStore.TestSlashDamageBonus
+                    Value = definition.TestValue
                 };
                 data.Modifiers = updatedModifiers;
 
@@ -168,7 +195,12 @@ namespace JotunnModStub
             public override string Name => "remove_modifier";
 
             public override string Help =>
-                "Removes a modifier from the held weapon. Usage: remove_modifier slash_damage.";
+                "Removes a modifier from the held weapon. Use autocomplete to see available modifiers.";
+
+            public override List<string> CommandOptionList()
+            {
+                return ModifierCatalog.GetCommandOptions();
+            }
 
             public override void Run(string[] args)
             {
@@ -178,19 +210,12 @@ namespace JotunnModStub
                     return;
                 }
 
-                string modifierId = args[0].Trim().ToLowerInvariant();
-                if (modifierId == "slash_damage")
+                if (!TryGetModifierDefinition(args[0], out ModifierDefinition definition))
                 {
-                    modifierId = ItemModifierDataStore.SlashDamageModifierId;
-                }
-
-                if (modifierId != ItemModifierDataStore.SlashDamageModifierId)
-                {
-                    global::Console.instance.Print(
-                        "Unknown modifier. Available modifier: slash_damage.");
                     return;
                 }
 
+                string modifierId = definition.Id;
                 if (!TryGetHeldWeapon(out ItemDrop.ItemData item))
                 {
                     return;
