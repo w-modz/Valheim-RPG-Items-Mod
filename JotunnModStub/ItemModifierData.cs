@@ -16,9 +16,9 @@ namespace JotunnModStub
         public float Value;
     }
 
-    // Serializable per-instance variant metadata, including rarity and modifier rolls.
+    // Serializable per-instance metadata, including rarity and modifier rolls.
     [Serializable]
-    public sealed class VariantItemData
+    public sealed class ItemModifierData
     {
         // Version of this saved data format, not the item's rarity.
         public int Version = 1;
@@ -30,98 +30,43 @@ namespace JotunnModStub
         public ModifierRoll[] Modifiers = new ModifierRoll[0];
     }
 
-    // Reads and writes variant metadata in an item's custom data dictionary.
-    internal static class VariantItemDataStore
+    // Reads and writes item metadata in an item's custom data dictionary.
+    internal static class ItemModifierDataStore
     {
         private const string CustomDataPrefix = "com.izzemi.myfirstmod.variant";
         private const string LegacyCustomDataKey = CustomDataPrefix;
         private const string VersionKey = CustomDataPrefix + ".version";
         private const string RarityKey = CustomDataPrefix + ".rarity";
         private const string ModifierKeyPrefix = CustomDataPrefix + ".modifier.";
-        internal const string RareSwordPrefabName = "SwordBlackmetalRare";
         internal const string SlashDamageModifierId = "bonus_slash_damage";
         internal const float TestSlashDamageBonus = 2.0f;
 
-        // Adds the fixed test rarity and modifier to a newly created variant item.
-        public static bool EnsureTestVariantData(ItemDrop.ItemData item)
+        public static void Clear(ItemDrop.ItemData item)
         {
-            Jotunn.Logger.LogInfo(
-                $"VariantItemDataStore.EnsureTestVariantData called for '{item?.m_dropPrefab?.name ?? "<null>"}'.");
-
-            if (item == null || item.m_dropPrefab == null ||
-                item.m_dropPrefab.name != RareSwordPrefabName)
+            if (item == null)
             {
-                return false;
+                throw new ArgumentNullException(nameof(item));
             }
 
-            bool hasData = TryLoad(item, out VariantItemData data);
-            data = data ?? new VariantItemData();
-
-            bool updated = false;
-            if (string.IsNullOrEmpty(data.RarityId))
+            if (item.m_customData == null)
             {
-                data.RarityId = "rare";
-                updated = true;
+                return;
             }
 
-            var modifiers = data.Modifiers ?? new ModifierRoll[0];
-            bool foundSlashDamageModifier = false;
-            foreach (ModifierRoll modifier in modifiers)
+            var keysToRemove = new List<string>();
+            foreach (string key in item.m_customData.Keys)
             {
-                if (modifier == null || modifier.Id != SlashDamageModifierId)
+                if (key == LegacyCustomDataKey ||
+                    key.StartsWith(CustomDataPrefix + ".", StringComparison.Ordinal))
                 {
-                    continue;
-                }
-
-                foundSlashDamageModifier = true;
-                if (modifier.Value != TestSlashDamageBonus)
-                {
-                    modifier.Value = TestSlashDamageBonus;
-                    updated = true;
+                    keysToRemove.Add(key);
                 }
             }
 
-            if (!foundSlashDamageModifier)
+            foreach (string key in keysToRemove)
             {
-                var updatedModifiers = new ModifierRoll[modifiers.Length + 1];
-                modifiers.CopyTo(updatedModifiers, 0);
-                updatedModifiers[updatedModifiers.Length - 1] = new ModifierRoll
-                {
-                    Id = SlashDamageModifierId,
-                    Value = TestSlashDamageBonus
-                };
-                data.Modifiers = updatedModifiers;
-                updated = true;
+                item.m_customData.Remove(key);
             }
-
-            if (updated || !hasData)
-            {
-                Save(item, data);
-            }
-
-            return true;
-        }
-
-        // Finds a modifier by ID and returns its rolled value when present.
-        public static bool TryGetModifierValue(VariantItemData data, string modifierId, out float value)
-        {
-            Jotunn.Logger.LogInfo(
-                $"VariantItemDataStore.TryGetModifierValue(data) called for modifier '{modifierId}'.");
-
-            if (data != null && data.Modifiers != null)
-            {
-                foreach (ModifierRoll modifier in data.Modifiers)
-                {
-                    if (modifier != null && modifier.Id == modifierId)
-                    {
-                        value = modifier.Value;
-                        return true;
-                    }
-                }
-            }
-
-            value = 0f;
-            return false;
         }
 
         // Reads a modifier's stored numeric value without deserializing all variant data.
@@ -150,10 +95,10 @@ namespace JotunnModStub
         }
 
         // Stores variant metadata as separate persistent item custom-data entries.
-        public static void Save(ItemDrop.ItemData item, VariantItemData data)
+        public static void Save(ItemDrop.ItemData item, ItemModifierData data)
         {
             Jotunn.Logger.LogInfo(
-                $"VariantItemDataStore.Save called for '{item?.m_dropPrefab?.name ?? "<null>"}'.");
+                $"ItemModifierDataStore.Save called for '{item?.m_dropPrefab?.name ?? "<null>"}'.");
 
             if (item == null)
             {
@@ -205,10 +150,10 @@ namespace JotunnModStub
         }
 
         // Loads variant metadata, supporting the previous JSON format for existing items.
-        public static bool TryLoad(ItemDrop.ItemData item, out VariantItemData data)
+        public static bool TryLoad(ItemDrop.ItemData item, out ItemModifierData data)
         {
             Jotunn.Logger.LogInfo(
-                $"VariantItemDataStore.TryLoad called for '{item?.m_dropPrefab?.name ?? "<null>"}'.");
+                $"ItemModifierDataStore.TryLoad called for '{item?.m_dropPrefab?.name ?? "<null>"}'.");
 
             if (item == null)
             {
@@ -223,7 +168,7 @@ namespace JotunnModStub
 
             if (item.m_customData.TryGetValue(LegacyCustomDataKey, out string json))
             {
-                data = JsonUtility.FromJson<VariantItemData>(json);
+                data = JsonUtility.FromJson<ItemModifierData>(json);
             }
 
             if (data == null &&
@@ -233,7 +178,7 @@ namespace JotunnModStub
                 return false;
             }
 
-            data = data ?? new VariantItemData();
+            data = data ?? new ItemModifierData();
             if (item.m_customData.TryGetValue(VersionKey, out string version) &&
                 int.TryParse(version, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedVersion))
             {

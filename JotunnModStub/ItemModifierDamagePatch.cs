@@ -6,19 +6,18 @@ namespace JotunnModStub
         typeof(ItemDrop.ItemData),
         nameof(ItemDrop.ItemData.GetDamage),
         new[] { typeof(int), typeof(float) })]
-    internal static class VariantDamagePatch
+    internal static class ItemModifierDamagePatch
     {
         private static void Postfix(ItemDrop.ItemData __instance, ref HitData.DamageTypes __result)
         {
-            if (__instance == null || __instance.m_dropPrefab == null ||
-                __instance.m_dropPrefab.name != VariantItemDataStore.RareSwordPrefabName)
+            if (__instance == null)
             {
                 return;
             }
 
-            if (!VariantItemDataStore.TryGetModifierValue(
+            if (!ItemModifierDataStore.TryGetModifierValue(
                 __instance,
-                VariantItemDataStore.SlashDamageModifierId,
+                ItemModifierDataStore.SlashDamageModifierId,
                 out float bonus))
             {
                 return;

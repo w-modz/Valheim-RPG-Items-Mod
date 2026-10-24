@@ -25,11 +25,7 @@ namespace JotunnModStub
 
             new Harmony(PluginGUID).PatchAll();
 
-            CommandManager.Instance.AddConsoleCommand(new DumpItemDataCommand());
-            CommandManager.Instance.AddConsoleCommand(new InitializeVariantDataCommand());
-
-            // Add custom items
-            PrefabManager.OnVanillaPrefabsAvailable += AddItemVariants;
+            ModCommands.Register();
         }
     }
 }
