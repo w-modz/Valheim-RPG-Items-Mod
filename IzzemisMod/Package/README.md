@@ -8,7 +8,25 @@ Izzemi's Mod (temporary title) adds rarity tiers and per-item modifiers to exist
 
 ## Installation
 
-Install through a compatible Valheim mod manager, or place the plugin DLL in `BepInEx/plugins`. The mod requires BepInEx and Jötunn; mod managers normally install these dependencies automatically.
+> **Note:** there is no release and no mod manager (Thunderstore) page for this mod yet, so it has to be built from source.
+
+Requirements: Windows, a Valheim install with BepInEx and [Jötunn](https://valheim-modding.github.io/Jotunn/) installed (for example through a mod manager profile), and the .NET SDK (or Visual Studio).
+
+1. Clone the repository.
+2. Create `Environment.props` in the repository root (it is git-ignored) with the paths for your machine:
+
+   ```xml
+   <Project>
+     <PropertyGroup>
+       <VALHEIM_INSTALL>C:\Program Files (x86)\Steam\steamapps\common\Valheim</VALHEIM_INSTALL>
+       <BEPINEX_PATH>C:\path\to\BepInEx</BEPINEX_PATH>
+       <MOD_DEPLOYPATH>C:\path\to\BepInEx\plugins</MOD_DEPLOYPATH>
+     </PropertyGroup>
+   </Project>
+   ```
+
+3. Build `IzzemisMod.sln` (for example `dotnet build IzzemisMod.sln`, or Build in Visual Studio). The build copies the plugin DLL into `MOD_DEPLOYPATH`.
+4. Start Valheim.
 
 ## Current features
 
