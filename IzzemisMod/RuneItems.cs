@@ -81,7 +81,13 @@ namespace IzzemisMod
                     Icons = new[] { LoadIcon(rune.PrefabName) ?? CreatePlaceholderIcon(rune.Color) }
                 };
 
-                ItemManager.Instance.AddItem(new CustomItem(rune.PrefabName, PlaceholderBasePrefab, config));
+                CustomItem customItem = new CustomItem(rune.PrefabName, PlaceholderBasePrefab, config);
+                if (rune.PrefabName == "IzzemisMod_RuneValheim")
+                {
+                    customItem.ItemDrop.m_itemData.m_shared.m_maxStackSize = 1;
+                }
+
+                ItemManager.Instance.AddItem(customItem);
             }
         }
 

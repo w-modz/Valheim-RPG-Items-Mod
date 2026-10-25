@@ -24,6 +24,12 @@ namespace IzzemisMod
 
             ModCommands.Register();
             RuneItems.Register();
+            RuneGui.Bind(Config);
+        }
+
+        private void Update()
+        {
+            RuneGui.HandleHotkey();
         }
     }
 }
