@@ -23,6 +23,7 @@ namespace IzzemisMod
             new Harmony(PluginGUID).PatchAll();
 
             ModCommands.Register();
+            RuneItems.Register();
         }
     }
 }
