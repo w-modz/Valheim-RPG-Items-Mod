@@ -67,7 +67,13 @@ namespace IzzemisMod
         public string Id { get; }
         public string CommandName { get; }
         public string DisplayName { get; }
-        public float TestValue { get; }
+        // Centre of the roll range; rolls span 50% to 150% of this unless overridden.
+        public float BaseValue { get; }
+        // Weakest and strongest normal rolls. Commands and special runes may go beyond them.
+        public float WeakestValue { get; }
+        public float StrongestValue { get; }
+        // Rolls are multiples of Step from WeakestValue; 0 means the value is fixed.
+        public float Step { get; }
         public ModifierDamageChannel DamageChannel { get; }
         public ModifierValueType ValueType { get; }
         public ModifierEffectType EffectType { get; }
@@ -86,11 +92,46 @@ namespace IzzemisMod
             Id = id;
             CommandName = commandName;
             DisplayName = displayName;
-            TestValue = testValue;
+            BaseValue = testValue;
+            if (ModifierCatalog.RollRanges.TryGetValue(id, out float[] range))
+            {
+                WeakestValue = range[0];
+                StrongestValue = range[1];
+                Step = range[2];
+            }
+            else
+            {
+                WeakestValue = testValue * 0.5f;
+                StrongestValue = testValue * 1.5f;
+                Step = 0f;
+            }
+
             DamageChannel = damageChannel;
             ValueType = valueType;
             EffectType = effectType;
             AllowedItemCategories = allowedItemCategories;
+        }
+
+        // Converts a value typed as shown in the tooltip (e.g. 25 for 25%) to the stored value.
+        public float FromDisplayValue(float displayValue)
+        {
+            return ValueType == ModifierValueType.Percentage ||
+                ValueType == ModifierValueType.PercentagePoints
+                ? displayValue / 100f
+                : displayValue;
+        }
+
+        public float Roll()
+        {
+            if (Step <= 0f)
+            {
+                return StrongestValue;
+            }
+
+            int steps = (int)Math.Round(Math.Abs(StrongestValue - WeakestValue) / Step);
+            int chosen = UnityEngine.Random.Range(0, steps + 1);
+            float direction = StrongestValue >= WeakestValue ? 1f : -1f;
+            return (float)Math.Round(WeakestValue + direction * chosen * Step, 4);
         }
 
         public bool IsAllowedOn(ItemDrop.ItemData item)
@@ -200,6 +241,69 @@ namespace IzzemisMod
 
     internal static class ModifierCatalog
     {
+        // id -> { weakest, strongest, step }. Step 0 means fixed at the strongest value.
+        internal static readonly Dictionary<string, float[]> RollRanges = new Dictionary<string, float[]>
+        {
+            { "base_damage", new[] { 0.10f, 0.30f, 0.01f } },
+            { "fire_damage", new[] { 5f, 15f, 1f } },
+            { "frost_damage", new[] { 5f, 15f, 1f } },
+            { "lightning_damage", new[] { 5f, 15f, 1f } },
+            { "poison_damage", new[] { 5f, 15f, 1f } },
+            { "spirit_damage", new[] { 5f, 15f, 1f } },
+            { "stamina_cost", new[] { -0.05f, -0.15f, 0.01f } },
+            { "bow_draw_stamina", new[] { -1f, -3f, 1f } },
+            { "crossbow_reload", new[] { -0.25f, -0.25f, 0f } },
+            { "movement_penalty", new[] { 0.5f, 1f, 0.05f } },
+            { "block_armour", new[] { 0.10f, 0.30f, 0.01f } },
+            { "parry_bonus", new[] { 0.25f, 0.75f, 0.05f } },
+            { "backstab_bonus", new[] { 0.5f, 1.5f, 0.5f } },
+            { "adrenaline_gain", new[] { 1f, 2f, 1f } },
+            { "shield_block_stamina", new[] { -0.5f, -0.5f, 0f } },
+            { "shield_movespeed", new[] { 0.03f, 0.07f, 0.01f } },
+            { "armour_flat", new[] { 2f, 6f, 1f } },
+            { "armour_percent", new[] { 0.10f, 0.30f, 0.01f } },
+            { "armour_movespeed", new[] { 0.02f, 0.04f, 0.01f } },
+            { "fire_resistance", new[] { 0.25f, 0.25f, 0f } },
+            { "frost_resistance", new[] { 0.25f, 0.25f, 0f } },
+            { "lightning_resistance", new[] { 0.25f, 0.25f, 0f } },
+            { "poison_resistance", new[] { 0.25f, 0.25f, 0f } },
+            { "parry_adrenaline", new[] { 3f, 7f, 1f } }
+        };
+
+        // Relative chance of a modifier being picked by any rune that adds a random modifier. Missing ids default to 1.
+        internal static readonly Dictionary<string, float> Weights = new Dictionary<string, float>
+        {
+            { "base_damage", 1f },
+            { "fire_damage", 1f },
+            { "frost_damage", 1f },
+            { "lightning_damage", 1f },
+            { "poison_damage", 1f },
+            { "spirit_damage", 1f },
+            { "stamina_cost", 1f },
+            { "bow_draw_stamina", 1f },
+            { "crossbow_reload", 1f },
+            { "movement_penalty", 1f },
+            { "block_armour", 1f },
+            { "parry_bonus", 1f },
+            { "backstab_bonus", 1f },
+            { "adrenaline_gain", 1f },
+            { "shield_block_stamina", 1f },
+            { "shield_movespeed", 1f },
+            { "armour_flat", 1f },
+            { "armour_percent", 1f },
+            { "armour_movespeed", 1f },
+            { "fire_resistance", 1f },
+            { "frost_resistance", 1f },
+            { "lightning_resistance", 1f },
+            { "poison_resistance", 1f },
+            { "parry_adrenaline", 1f }
+        };
+
+        public static float GetWeight(string id)
+        {
+            return Weights.TryGetValue(id, out float weight) ? Math.Max(0f, weight) : 1f;
+        }
+
         private static readonly ModifierDefinition[] Definitions =
         {
             new ModifierDefinition(

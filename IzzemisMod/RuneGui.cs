@@ -132,6 +132,38 @@ namespace IzzemisMod
         }
     }
 
+    // Re-parents the Runes button under the container panel while a chest is open, so it never covers it.
+    [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.Update))]
+    internal static class RuneGuiInventoryButtonPositionPatch
+    {
+        private static void Postfix(InventoryGui __instance)
+        {
+            if (__instance.m_player == null || __instance.m_container == null)
+            {
+                return;
+            }
+
+            Transform button = __instance.m_player.Find("IzzemisModRuneButton");
+            if (button == null)
+            {
+                button = __instance.m_container.Find("IzzemisModRuneButton");
+            }
+
+            if (button == null)
+            {
+                return;
+            }
+
+            Transform desiredParent = __instance.m_container.gameObject.activeInHierarchy
+                ? __instance.m_container
+                : __instance.m_player;
+            if (button.parent != desiredParent)
+            {
+                button.SetParent(desiredParent, false);
+            }
+        }
+    }
+
     internal sealed class RuneGuiPanel : MonoBehaviour
     {
         private const float RowHeight = 60f;
@@ -146,7 +178,8 @@ namespace IzzemisMod
         private RectTransform runeContent;
 
         private ItemDrop.ItemData selectedItem;
-        private string selectedRunePrefab;
+        private string selectedRuneKey;
+        private string resultMessage;
         private float applyElapsed;
         private bool applying;
 
@@ -261,7 +294,7 @@ namespace IzzemisMod
             {
                 if (RuneGui.IsRune(item))
                 {
-                    string key = item.m_dropPrefab.name;
+                    string key = RuneEffects.GetRuneKey(item);
                     if (!runes.TryGetValue(key, out List<ItemDrop.ItemData> stacks))
                     {
                         stacks = new List<ItemDrop.ItemData>();
@@ -281,9 +314,9 @@ namespace IzzemisMod
                 selectedItem = null;
             }
 
-            if (selectedRunePrefab != null && !runes.ContainsKey(selectedRunePrefab))
+            if (selectedRuneKey != null && !runes.ContainsKey(selectedRuneKey))
             {
-                selectedRunePrefab = null;
+                selectedRuneKey = null;
             }
 
             ClearChildren(itemContent);
@@ -306,8 +339,8 @@ namespace IzzemisMod
                 }
 
                 string prefab = entry.Key;
-                string label = $"{Localization.instance.Localize(entry.Value[0].m_shared.m_name)} x{count}";
-                AddRow(runeContent, row++, label, prefab == selectedRunePrefab, () => SelectRune(prefab));
+                string label = DescribeRune(entry.Value[0], count);
+                AddRow(runeContent, row++, label, prefab == selectedRuneKey, () => SelectRune(prefab));
             }
 
             itemContent.sizeDelta = new Vector2(0f, items.Count * RowHeight);
@@ -364,6 +397,7 @@ namespace IzzemisMod
         private void SelectItem(ItemDrop.ItemData item)
         {
             CancelApply();
+            resultMessage = null;
             selectedItem = item;
             RefreshLists();
         }
@@ -371,8 +405,41 @@ namespace IzzemisMod
         private void SelectRune(string prefab)
         {
             CancelApply();
-            selectedRunePrefab = prefab;
+            resultMessage = null;
+            selectedRuneKey = prefab;
             RefreshLists();
+        }
+
+        private static string DescribeRune(ItemDrop.ItemData rune, int count)
+        {
+            string name = Localization.instance.Localize(rune.m_shared.m_name);
+            if (RuneEffects.TryGetValheimData(rune, out string id, out float value, out _) &&
+                ModifierCatalog.TryGetById(id, out ModifierDefinition definition))
+            {
+                string line = System.Text.RegularExpressions.Regex.Replace(definition.FormatTooltipLine(value), "<.*?>", string.Empty);
+                name += $" ({line})";
+            }
+
+            return $"{name} x{count}";
+        }
+
+        private ItemDrop.ItemData FindSelectedRune()
+        {
+            Player player = Player.m_localPlayer;
+            if (player == null || selectedRuneKey == null)
+            {
+                return null;
+            }
+
+            foreach (ItemDrop.ItemData item in player.GetInventory().GetAllItems())
+            {
+                if (RuneGui.IsRune(item) && RuneEffects.GetRuneKey(item) == selectedRuneKey)
+                {
+                    return item;
+                }
+            }
+
+            return null;
         }
 
         private void UpdateInfo()
@@ -382,17 +449,24 @@ namespace IzzemisMod
                 return;
             }
 
-            if (selectedItem == null || selectedRunePrefab == null)
+            if (resultMessage != null)
+            {
+                infoText.text = resultMessage;
+                return;
+            }
+
+            if (selectedItem == null || selectedRuneKey == null)
             {
                 infoText.text = "Select an item and a rune.";
                 return;
             }
 
-            infoText.text = RuneDescription(selectedRunePrefab);
+            infoText.text = RuneDescription(selectedRuneKey);
         }
 
-        private static string RuneDescription(string prefab)
+        private static string RuneDescription(string key)
         {
+            string prefab = RuneGui.RunePrefabPrefix + key.Split('|')[0];
             GameObject runePrefab = PrefabManager.Instance.GetPrefab(prefab);
             ItemDrop drop = runePrefab != null ? runePrefab.GetComponent<ItemDrop>() : null;
             return drop != null ? Localization.instance.Localize(drop.m_itemData.m_shared.m_description) : string.Empty;
@@ -406,12 +480,22 @@ namespace IzzemisMod
                 return;
             }
 
-            if (selectedItem == null || selectedRunePrefab == null)
+            ItemDrop.ItemData rune = FindSelectedRune();
+            if (selectedItem == null || rune == null)
             {
-                infoText.text = "Select an item and a rune first.";
+                resultMessage = "Select an item and a rune first.";
+                infoText.text = resultMessage;
                 return;
             }
 
+            if (!RuneEffects.Execute(Player.m_localPlayer, rune, selectedItem, false, out string error))
+            {
+                resultMessage = "<color=#E03030>" + error + "</color>";
+                infoText.text = resultMessage;
+                return;
+            }
+
+            resultMessage = null;
             applying = true;
             applyElapsed = 0f;
             applyLabel.text = "Cancel";
@@ -451,7 +535,7 @@ namespace IzzemisMod
             }
 
             Player player = Player.m_localPlayer;
-            if (player == null || !player.GetInventory().ContainsItem(selectedItem))
+            if (player == null || !player.GetInventory().ContainsItem(selectedItem) || FindSelectedRune() == null)
             {
                 CancelApply();
                 RefreshLists();
@@ -466,16 +550,32 @@ namespace IzzemisMod
             }
         }
 
-        // Rune effects are not implemented yet, so the rune is not consumed and the item is unchanged.
         private void FinishApply()
         {
             applying = false;
             applyLabel.text = "Apply Rune";
             SetProgress(0f);
-            infoText.text = "Rune effect not implemented yet.";
-            Player localPlayer = Player.m_localPlayer;
-            localPlayer.m_skillLevelupEffects.Create(localPlayer.transform.position, Quaternion.identity, localPlayer.transform);
-            localPlayer.Message(MessageHud.MessageType.TopLeft, "Rune effect not implemented yet.");
+
+            Player player = Player.m_localPlayer;
+            ItemDrop.ItemData rune = FindSelectedRune();
+            string message = null;
+            if (rune == null || !RuneEffects.Execute(player, rune, selectedItem, true, out message))
+            {
+                resultMessage = "<color=#E03030>" + (message ?? "The rune could not be applied.") + "</color>";
+                RefreshLists();
+                return;
+            }
+
+            // Vanilla "nocost" keeps the rune; the item change and any rune rewards still happen.
+            if (!player.NoCostCheat())
+            {
+                player.GetInventory().RemoveOneItem(rune);
+            }
+
+            player.m_skillLevelupEffects.Create(player.transform.position, Quaternion.identity, player.transform);
+            player.Message(MessageHud.MessageType.TopLeft, message);
+            resultMessage = message;
+            RefreshLists();
         }
 
         private void OnDestroy()

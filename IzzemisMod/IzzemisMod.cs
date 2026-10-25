@@ -29,7 +29,8 @@ namespace IzzemisMod
 
         private void Update()
         {
-            RuneGui.HandleHotkey();
+            // Disabled for now: the hotkey also fired while typing in chat and search bars.
+            // RuneGui.HandleHotkey();
         }
     }
 }

@@ -28,6 +28,9 @@ namespace IzzemisMod
 
         // The modifiers rolled for this specific item instance.
         public ModifierRoll[] Modifiers = new ModifierRoll[0];
+
+        // Set once a Rune of Hel has been used; blocks most further rune modification.
+        public bool HelTouched;
     }
 
     // Reads and writes item metadata in an item's custom data dictionary.
@@ -38,6 +41,7 @@ namespace IzzemisMod
         private const string LegacyCustomDataKey = CustomDataPrefix;
         private const string VersionKey = CustomDataPrefix + ".version";
         private const string RarityKey = CustomDataPrefix + ".rarity";
+        private const string HelKey = CustomDataPrefix + ".hel";
         private const string ModifierKeyPrefix = CustomDataPrefix + ".modifier.";
 
         public static bool TryGetRarityId(ItemDrop.ItemData item, out string rarityId)
@@ -155,6 +159,10 @@ namespace IzzemisMod
 
             item.m_customData[VersionKey] = data.Version.ToString(CultureInfo.InvariantCulture);
             item.m_customData[RarityKey] = data.RarityId ?? string.Empty;
+            if (data.HelTouched)
+            {
+                item.m_customData[HelKey] = "1";
+            }
 
             if (data.Modifiers == null)
             {
@@ -210,6 +218,8 @@ namespace IzzemisMod
             {
                 data.RarityId = rarity;
             }
+
+            data.HelTouched = item.m_customData.ContainsKey(HelKey);
 
             var modifiers = new List<ModifierRoll>();
             var invalidModifierKeys = new List<string>();

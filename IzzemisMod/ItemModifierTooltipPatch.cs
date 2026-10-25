@@ -12,6 +12,16 @@ namespace IzzemisMod
             ItemDrop.ItemData item,
             UITooltip tooltip)
         {
+            string runeDescription = RuneEffects.DescribeValheimRune(item);
+            if (runeDescription != null)
+            {
+                tooltip.Set(
+                    Localization.instance.Localize(item.m_shared.m_name),
+                    item.GetTooltip().TrimEnd() + "\n\n" + runeDescription,
+                    __instance.m_tooltipAnchor);
+                return false;
+            }
+
             if (item == null ||
                 !ItemModifierDataStore.TryLoad(item, out ItemModifierData data))
             {
@@ -65,6 +75,10 @@ namespace IzzemisMod
             }
 
             string description = item.GetTooltip();
+            if (data.HelTouched)
+            {
+                modifierLines.Add("<color=#9B30FF>Touched by Hel</color>");
+            }
             if (modifierLines.Count > 0)
             {
                 description = description.TrimEnd() +

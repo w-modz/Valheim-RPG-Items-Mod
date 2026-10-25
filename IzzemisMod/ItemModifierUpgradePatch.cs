@@ -104,6 +104,7 @@ namespace IzzemisMod
             {
                 Version = data.Version,
                 RarityId = data.RarityId,
+                HelTouched = data.HelTouched,
                 Modifiers = modifiers.ToArray()
             };
         }

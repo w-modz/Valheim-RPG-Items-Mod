@@ -316,7 +316,7 @@ namespace IzzemisMod
             public override string Name => "modifier";
 
             public override string Help =>
-                "Adds a modifier to an equipped item. Usage: modifier <modifier> [slot].";
+                "Adds a modifier to an equipped item at its max value. Usage: modifier <modifier> [value] [slot]. Value uses tooltip units (25 = 25% for percentage modifiers) and may exceed the normal range.";
 
             public override List<string> CommandOptionList()
             {
@@ -325,7 +325,7 @@ namespace IzzemisMod
 
             public override void Run(string[] args)
             {
-                if (args.Length < 1 || string.IsNullOrWhiteSpace(args[0]) || args.Length > 2)
+                if (args.Length < 1 || string.IsNullOrWhiteSpace(args[0]) || args.Length > 3)
                 {
                     global::Console.instance.Print(Help);
                     return;
@@ -336,9 +336,30 @@ namespace IzzemisMod
                     return;
                 }
 
+                float? customValue = null;
+                string slotArgument = null;
+                for (int i = 1; i < args.Length; i++)
+                {
+                    if (customValue == null &&
+                        float.TryParse(args[i], System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out float parsed))
+                    {
+                        customValue = definition.FromDisplayValue(parsed);
+                    }
+                    else if (slotArgument == null)
+                    {
+                        slotArgument = args[i];
+                    }
+                    else
+                    {
+                        global::Console.instance.Print(Help);
+                        return;
+                    }
+                }
+
                 string modifierId = definition.Id;
                 string modifierName = definition.CommandName;
-                if (!TryGetEquippedItem(args, 1, out ItemDrop.ItemData item))
+                if (!TryGetEquippedItem(slotArgument, out ItemDrop.ItemData item))
                 {
                     return;
                 }
@@ -399,13 +420,13 @@ namespace IzzemisMod
                 updatedModifiers[updatedModifiers.Length - 1] = new ModifierRoll
                 {
                     Id = modifierId,
-                    Value = definition.TestValue
+                    Value = customValue ?? definition.StrongestValue
                 };
                 data.Modifiers = updatedModifiers;
 
                 ItemModifierDataStore.Save(item, data);
                 global::Console.instance.Print(
-                    $"Added '{modifierName}' to the equipped item.");
+                    $"Added '{modifierName}' to the equipped item ({definition.FormatTooltipLine(updatedModifiers[updatedModifiers.Length - 1].Value)}).");
             }
         }
 
