@@ -34,7 +34,7 @@ Resistance modifiers are separate by damage type. For each type, the strongest r
 
 ## Console commands
 
-Open the in-game console and use:
+Open the in-game console and use the commands below. `set_rarity`, `modifier`, and `remove_modifier` only work when cheats are enabled (the vanilla `devcommands`).
 
 | Command | Usage | Effect |
 | --- | --- | --- |

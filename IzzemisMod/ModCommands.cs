@@ -244,6 +244,8 @@ namespace IzzemisMod
         {
             public override string Name => "set_rarity";
 
+            public override bool IsCheat => true;
+
             public override string Help =>
                 "Sets rarity on an equipped item. Usage: set_rarity <rarity> [slot] (use 0 to clear rarity and modifiers).";
 
@@ -314,6 +316,8 @@ namespace IzzemisMod
         private sealed class ModifierCommand : ConsoleCommand
         {
             public override string Name => "modifier";
+
+            public override bool IsCheat => true;
 
             public override string Help =>
                 "Adds a modifier to an equipped item at its max value. Usage: modifier <modifier> [value] [slot]. Value uses tooltip units (25 = 25% for percentage modifiers) and may exceed the normal range.";
@@ -433,6 +437,8 @@ namespace IzzemisMod
         private sealed class RemoveModifierCommand : ConsoleCommand
         {
             public override string Name => "remove_modifier";
+
+            public override bool IsCheat => true;
 
             public override string Help =>
                 "Removes a modifier from an equipped item. Usage: remove_modifier <modifier> [slot].";
