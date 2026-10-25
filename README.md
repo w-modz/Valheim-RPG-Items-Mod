@@ -2,7 +2,7 @@
 
 Author: Izzemi
 
-Izzemi's Mod adds rarity tiers and per-item modifiers to existing Valheim equipment. It does not add replacement equipment models or other custom item assets.
+Izzemi's Mod (temporary title) adds rarity tiers and per-item modifiers to existing Valheim equipment. It does not add replacement equipment models or other custom item assets.
 
 ## Installation
 
@@ -59,7 +59,7 @@ The optional slot targets the equipped item. Supported slots are `weapon`, `bow`
 
 ## Runes
 
-Runes are used from the rune window, opened with the **Runes** button under the inventory (the hotkey is temporarily disabled). Pick an item and a rune, then apply: a 3-second progress bar runs and can be cancelled by clicking again. The rune is consumed unless the vanilla `nocost` cheat is on. Runes currently have no recipe and no drops; spawn them with the console, e.g. `spawn IzzemisMod_RuneAsgard`.
+Runes are used from the rune window, opened with the **Runes** button under the inventory (the hotkey is temporarily disabled). Pick an item and a rune, then apply: a 3-second progress bar runs and can be cancelled by clicking again. The rune is consumed unless the vanilla `nocost` cheat is on. Runes have no crafting recipe; they drop from enemies (see [Rune drops](#rune-drops)) or can be spawned with the console, e.g. `spawn IzzemisMod_RuneAsgard`. Ammo (arrows and bolts) cannot receive rarity, modifiers, or runes.
 
 | Rune | Effect |
 | --- | --- |
@@ -72,11 +72,26 @@ Runes are used from the rune window, opened with the **Runes** button under the 
 | Niflheim | Rerolls the values of all modifiers on an item. |
 | Hel | Epic items only. One of four equal outcomes: destroys the item, removes a modifier, adds a bonus 5th modifier, or raises all non-fixed modifier values by 20% (may exceed normal maximums; fixed values such as resistances are unchanged). The item is then "Touched by Hel": only Nidavellir and Muspelheim can be used on it. It can still be upgraded at crafting stations, keeping its rarity and modifiers. |
 | Nidavellir | Destroys an item with modifiers and grants a Rune of Valheim holding one of its modifiers at its exact value. |
-| Valheim | Only obtained from Nidavellir (stack size 1). Applies its modifier to an item of the same type as the sacrificed item that has a rarity, a free modifier slot, and does not already have that modifier. |
+| Valheim | Only obtained from Nidavellir or the three late-game bosses (stack size 1). Applies its modifier to an item of the same type as the sacrificed item that has a rarity, a free modifier slot, and does not already have that modifier. |
+
+## Rune drops
+
+Runes drop from a fixed list of enemies (any enemy not listed drops no runes). Enemies are grouped by biome. Each group has a base chance per rune, in percent per kill, and every enemy has a multiplier applied to its group's chances. Rune of Valheim never drops from normal enemies. The tables are in `RuneDrops.cs` (`BaseChances` and `Enemies`).
+
+- **Unlock biomes:** Asgard and Midgard drop from the Black Forest, Vanaheim and Muspelheim from the Swamp, Alfheim and Niflheim from the Mountain, Jotunheim and Nidavellir from the Plains, and Hel from the Mistlands. Each keeps dropping in later biomes. Nothing drops in the Meadows.
+- **Stars:** the chance is multiplied once per star (1 star = x3, 2 stars = x9 by default).
+- **Bosses** ignore the tables and drop guaranteed runes, one per player within 200 m: Eikthyr drops Midgard, The Elder Vanaheim, Bonemass Alfheim, and Moder Jotunheim. Yagluth, The Queen, and Fader each drop a Rune of Valheim per player, rolled separately, with a random item type and a random modifier at its maximum value.
+
+Configuration (`BepInEx/config/com.izzemi.izzemismod.cfg`, section `Rune Drops`):
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `DropRateMultiplier` | 1 | Global multiplier for all rune drops, including bosses. 0 disables rune drops. |
+| `StarMultiplier` | 3 | Chance multiplier per enemy star. 1 disables the star bonus. |
 
 ## Not implemented yet
 
-- Crafting recipes for runes.
-- Automatic rune drops from enemies.
+- In-game model for dropped runes (currently using placeholder).
 - A modifier pool for magic weapons.
+- Additional random effects for enemies with stars, that increase their strength and dropped rewards.
 - Legendary item variants rarely dropped from enemies, each with unique effects.
