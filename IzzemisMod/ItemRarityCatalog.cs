@@ -11,19 +11,22 @@ namespace IzzemisMod
         public string TooltipColor { get; }
         public Color GlowColor { get; }
         public int Rank { get; }
+        public int MaxModifiers { get; }
 
         public ItemRarityDefinition(
             string id,
             string displayName,
             string tooltipColor,
             Color glowColor,
-            int rank)
+            int rank,
+            int maxModifiers)
         {
             Id = id;
             DisplayName = displayName;
             TooltipColor = tooltipColor;
             GlowColor = glowColor;
             Rank = rank;
+            MaxModifiers = maxModifiers;
         }
     }
 
@@ -31,9 +34,9 @@ namespace IzzemisMod
     {
         private static readonly ItemRarityDefinition[] Definitions =
         {
-            new ItemRarityDefinition("magic", "Magic", "green", new Color(0.2f, 1f, 0.35f), 1),
-            new ItemRarityDefinition("rare", "Rare", "blue", new Color(0.25f, 0.55f, 1f), 2),
-            new ItemRarityDefinition("epic", "Epic", "purple", new Color(0.75f, 0.3f, 1f), 3)
+            new ItemRarityDefinition("magic", "Magic", "green", new Color(0.2f, 1f, 0.35f), 1, 1),
+            new ItemRarityDefinition("rare", "Rare", "blue", new Color(0.25f, 0.55f, 1f), 2, 2),
+            new ItemRarityDefinition("epic", "Epic", "purple", new Color(0.75f, 0.3f, 1f), 3, 4)
         };
 
         public static IReadOnlyList<ItemRarityDefinition> All => Definitions;

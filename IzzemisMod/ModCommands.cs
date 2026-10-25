@@ -73,6 +73,25 @@ namespace IzzemisMod
             return false;
         }
 
+        private static int GetModifierCount(ModifierRoll[] modifiers)
+        {
+            if (modifiers == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            foreach (ModifierRoll modifier in modifiers)
+            {
+                if (modifier != null && !string.IsNullOrWhiteSpace(modifier.Id))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
         private sealed class SetRarityCommand : ConsoleCommand
         {
             public override string Name => "set_rarity";
@@ -94,7 +113,9 @@ namespace IzzemisMod
                 }
 
                 string rarity = args[0].Trim().ToLowerInvariant();
-                if (rarity != "0" && !ItemRarityCatalog.TryGet(rarity, out _))
+                ItemRarityDefinition rarityDefinition = null;
+                if (rarity != "0" &&
+                    !ItemRarityCatalog.TryGet(rarity, out rarityDefinition))
                 {
                     global::Console.instance.Print(
                         $"Invalid rarity '{args[0]}'. Valid rarities are magic, rare, and epic; use 0 to remove rarity and modifiers.");
@@ -118,6 +139,14 @@ namespace IzzemisMod
                 if (!ItemModifierDataStore.TryLoad(item, out ItemModifierData data))
                 {
                     data = new ItemModifierData();
+                }
+
+                int modifierCount = GetModifierCount(data.Modifiers);
+                if (modifierCount > rarityDefinition.MaxModifiers)
+                {
+                    global::Console.instance.Print(
+                        $"Cannot set rarity to '{rarity}': the item has {modifierCount} modifiers, but {rarityDefinition.DisplayName} allows at most {rarityDefinition.MaxModifiers}. Remove modifiers first.");
+                    return;
                 }
 
                 data.RarityId = rarity;
@@ -173,6 +202,21 @@ namespace IzzemisMod
                             $"Held item already has modifier '{modifierId}'.");
                         return;
                     }
+                }
+
+                if (!ItemRarityCatalog.TryGet(data.RarityId, out ItemRarityDefinition rarityDefinition))
+                {
+                    global::Console.instance.Print(
+                        "Set a rarity before adding modifiers. Magic allows 1, Rare allows 2, and Epic allows 4 modifiers.");
+                    return;
+                }
+
+                int modifierCount = GetModifierCount(modifiers);
+                if (modifierCount >= rarityDefinition.MaxModifiers)
+                {
+                    global::Console.instance.Print(
+                        $"{rarityDefinition.DisplayName} items can have at most {rarityDefinition.MaxModifiers} modifier(s).");
+                    return;
                 }
 
                 var updatedModifiers = new ModifierRoll[modifiers.Length + 1];

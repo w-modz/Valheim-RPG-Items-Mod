@@ -11,7 +11,7 @@ Install the package with a compatible Thunderstore mod manager or place the plug
 ## Features
 
 - Set item rarity on held weapons.
-- Add and remove damage modifiers from held weapons.
+- Add and remove damage modifiers from held weapons (Magic: 1, Rare: 2, Epic: 4).
 - View rarity and modifier details in item tooltips.
 - See rarity colors on item tooltips and visuals.
 
