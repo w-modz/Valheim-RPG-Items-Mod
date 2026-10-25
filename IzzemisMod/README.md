@@ -2,6 +2,8 @@
 
 Author: Izzemi
 
+Built on the [Jotunn mod stub](https://github.com/Valheim-Modding/JotunnModStub) by the Valheim Modding Community.
+
 Izzemi's Mod (temporary title) adds rarity tiers and per-item modifiers to existing Valheim equipment. It does not add replacement equipment models or other custom item assets.
 
 ## Installation
