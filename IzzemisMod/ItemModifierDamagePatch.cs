@@ -18,6 +18,7 @@ namespace IzzemisMod
             foreach (ModifierDefinition definition in ModifierCatalog.All)
             {
                 if (definition.DamageChannel == ModifierDamageChannel.None ||
+                    !definition.IsAllowedOn(__instance) ||
                     !ItemModifierDataStore.TryGetModifierValue(
                         __instance,
                         definition.Id,

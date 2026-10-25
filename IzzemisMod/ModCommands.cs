@@ -14,49 +14,197 @@ namespace IzzemisMod
             CommandManager.Instance.AddConsoleCommand(new DumpItemDataCommand());
         }
 
-        private static ItemDrop.ItemData GetHeldItem()
+        private static bool IsWeaponCategory(ModifierItemCategory category)
         {
-            Player player = Player.m_localPlayer;
-            return player == null ? null : player.GetCurrentWeapon();
+            return category == ModifierItemCategory.Weapon ||
+                category == ModifierItemCategory.Bow ||
+                category == ModifierItemCategory.Crossbow ||
+                category == ModifierItemCategory.MagicWeapon;
         }
 
-        private static bool IsWeapon(ItemDrop.ItemData item)
+        private static void AddIfSupported(
+            List<ItemDrop.ItemData> items,
+            ItemDrop.ItemData item)
         {
-            if (item == null)
+            if (!ModifierCatalog.TryGetItemCategory(item, out _))
             {
-                return false;
+                return;
             }
 
-            switch (item.m_shared.m_itemType)
+            foreach (ItemDrop.ItemData existing in items)
             {
-                case ItemDrop.ItemData.ItemType.OneHandedWeapon:
-                case ItemDrop.ItemData.ItemType.TwoHandedWeapon:
-                case ItemDrop.ItemData.ItemType.TwoHandedWeaponLeft:
-                case ItemDrop.ItemData.ItemType.Bow:
-                case ItemDrop.ItemData.ItemType.Attach_Atgeir:
-                    return true;
-                default:
-                    return false;
+                if (ReferenceEquals(existing, item))
+                {
+                    return;
+                }
             }
+
+            items.Add(item);
         }
 
-        private static bool TryGetHeldWeapon(out ItemDrop.ItemData item)
+        private static List<ItemDrop.ItemData> GetEquippedArmourItems(Player player)
         {
-            item = GetHeldItem();
+            var items = new List<ItemDrop.ItemData>();
+            AddIfSupported(items, player.m_helmetItem);
+            AddIfSupported(items, player.m_chestItem);
+            AddIfSupported(items, player.m_legItem);
+            AddIfSupported(items, player.m_shoulderItem);
+            return items;
+        }
+
+        private static List<ItemDrop.ItemData> GetSupportedEquippedItems(Player player)
+        {
+            var items = new List<ItemDrop.ItemData>();
+            AddIfSupported(items, player.GetCurrentWeapon());
+            if (player.m_leftItem != null &&
+                player.m_leftItem.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Shield)
+            {
+                AddIfSupported(items, player.m_leftItem);
+            }
+
+            foreach (ItemDrop.ItemData armourItem in GetEquippedArmourItems(player))
+            {
+                AddIfSupported(items, armourItem);
+            }
+
+            return items;
+        }
+
+        private static bool TryGetOneItem(
+            List<ItemDrop.ItemData> items,
+            string slot,
+            out ItemDrop.ItemData item)
+        {
+            item = null;
+            if (items.Count == 1)
+            {
+                item = items[0];
+                return true;
+            }
+
+            if (items.Count == 0)
+            {
+                global::Console.instance.Print($"No equipped {slot} was found.");
+            }
+            else
+            {
+                global::Console.instance.Print(
+                    $"More than one {slot} is equipped. Specify a specific slot.");
+            }
+
+            return false;
+        }
+
+        private static bool TryGetEquippedItem(string slotArgument, out ItemDrop.ItemData item)
+        {
+            item = null;
             if (Player.m_localPlayer == null)
             {
                 global::Console.instance.Print("No local player is available.");
                 return false;
             }
 
-            if (!IsWeapon(item))
+            Player player = Player.m_localPlayer;
+            if (string.IsNullOrWhiteSpace(slotArgument))
             {
+                List<ItemDrop.ItemData> equippedItems = GetSupportedEquippedItems(player);
+                if (equippedItems.Count == 1)
+                {
+                    item = equippedItems[0];
+                    return true;
+                }
+
                 global::Console.instance.Print(
-                    "Hold a weapon to use this command. Tools and other items are not supported.");
+                    equippedItems.Count == 0
+                        ? "No supported weapon, shield, or armour is equipped."
+                        : "Multiple supported items are equipped. Specify weapon, shield, armour, helmet, chest, legs, or cape.");
                 return false;
             }
 
-            return true;
+            string slot = slotArgument.Trim().ToLowerInvariant();
+            switch (slot)
+            {
+                case "weapon":
+                    item = player.GetCurrentWeapon();
+                    if (ModifierCatalog.TryGetItemCategory(item, out ModifierItemCategory weaponCategory) &&
+                        IsWeaponCategory(weaponCategory))
+                    {
+                        return true;
+                    }
+
+                    global::Console.instance.Print("No supported weapon is equipped in the weapon slot.");
+                    return false;
+                case "bow":
+                case "crossbow":
+                case "magic":
+                case "magic_weapon":
+                    item = player.GetCurrentWeapon();
+                    if (ModifierCatalog.TryGetItemCategory(item, out ModifierItemCategory category) &&
+                        ((slot == "bow" && category == ModifierItemCategory.Bow) ||
+                         (slot == "crossbow" && category == ModifierItemCategory.Crossbow) ||
+                         ((slot == "magic" || slot == "magic_weapon") &&
+                          category == ModifierItemCategory.MagicWeapon)))
+                    {
+                        return true;
+                    }
+
+                    global::Console.instance.Print($"No equipped {slot.Replace('_', ' ')} was found.");
+                    return false;
+                case "shield":
+                    var shields = new List<ItemDrop.ItemData>();
+                    AddIfShield(shields, player.m_leftItem);
+                    AddIfShield(shields, player.m_rightItem);
+                    return TryGetOneItem(shields, "shield", out item);
+                case "armour":
+                    return TryGetOneItem(GetEquippedArmourItems(player), "armour piece", out item);
+                case "helmet":
+                    item = player.m_helmetItem;
+                    break;
+                case "chest":
+                    item = player.m_chestItem;
+                    break;
+                case "legs":
+                    item = player.m_legItem;
+                    break;
+                case "cape":
+                    item = player.m_shoulderItem;
+                    break;
+                default:
+                    global::Console.instance.Print(
+                        "Invalid slot. Use weapon, shield, armour, helmet, chest, legs, cape, bow, crossbow, or magic.");
+                    return false;
+            }
+
+            if (ModifierCatalog.TryGetItemCategory(item, out ModifierItemCategory armourCategory) &&
+                armourCategory == ModifierItemCategory.Armour)
+            {
+                return true;
+            }
+
+            global::Console.instance.Print($"No equipped {slot} was found.");
+            return false;
+        }
+
+        private static void AddIfShield(List<ItemDrop.ItemData> shields, ItemDrop.ItemData item)
+        {
+            if (item != null &&
+                item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Shield)
+            {
+                AddIfSupported(shields, item);
+            }
+        }
+
+        private static bool TryGetEquippedItem(string[] args, int requiredArgumentCount, out ItemDrop.ItemData item)
+        {
+            item = null;
+            if (args.Length < requiredArgumentCount || args.Length > requiredArgumentCount + 1)
+            {
+                return false;
+            }
+
+            return TryGetEquippedItem(
+                args.Length == requiredArgumentCount ? null : args[requiredArgumentCount],
+                out item);
         }
 
         private static bool TryGetModifierDefinition(
@@ -97,7 +245,7 @@ namespace IzzemisMod
             public override string Name => "set_rarity";
 
             public override string Help =>
-                "Sets the held weapon's rarity. Usage: set_rarity <rarity> (use 0 to clear rarity and modifiers).";
+                "Sets rarity on an equipped item. Usage: set_rarity <rarity> [slot] (use 0 to clear rarity and modifiers).";
 
             public override List<string> CommandOptionList()
             {
@@ -106,7 +254,13 @@ namespace IzzemisMod
 
             public override void Run(string[] args)
             {
-                if (args.Length != 1 || string.IsNullOrWhiteSpace(args[0]))
+                if (args.Length < 1 || string.IsNullOrWhiteSpace(args[0]))
+                {
+                    global::Console.instance.Print(Help);
+                    return;
+                }
+
+                if (args.Length > 2)
                 {
                     global::Console.instance.Print(Help);
                     return;
@@ -122,7 +276,7 @@ namespace IzzemisMod
                     return;
                 }
 
-                if (!TryGetHeldWeapon(out ItemDrop.ItemData item))
+                if (!TryGetEquippedItem(args, 1, out ItemDrop.ItemData item))
                 {
                     return;
                 }
@@ -132,7 +286,7 @@ namespace IzzemisMod
                     ItemModifierDataStore.Clear(item);
                     ItemRarityVisuals.RefreshEquippedGlow(Player.m_localPlayer);
                     global::Console.instance.Print(
-                        "Cleared rarity and modifiers from the held item.");
+                        "Cleared rarity and modifiers from the equipped item.");
                     return;
                 }
 
@@ -153,7 +307,7 @@ namespace IzzemisMod
                 ItemModifierDataStore.Save(item, data);
                 ItemRarityVisuals.RefreshEquippedGlow(Player.m_localPlayer);
                 global::Console.instance.Print(
-                    $"Set held item rarity to '{data.RarityId}'.");
+                    $"Set equipped item rarity to '{data.RarityId}'.");
             }
         }
 
@@ -162,7 +316,7 @@ namespace IzzemisMod
             public override string Name => "modifier";
 
             public override string Help =>
-                "Adds a modifier to the held weapon. Use autocomplete to see available modifiers.";
+                "Adds a modifier to an equipped item. Usage: modifier <modifier> [slot].";
 
             public override List<string> CommandOptionList()
             {
@@ -171,7 +325,7 @@ namespace IzzemisMod
 
             public override void Run(string[] args)
             {
-                if (args.Length != 1 || string.IsNullOrWhiteSpace(args[0]))
+                if (args.Length < 1 || string.IsNullOrWhiteSpace(args[0]) || args.Length > 2)
                 {
                     global::Console.instance.Print(Help);
                     return;
@@ -183,8 +337,29 @@ namespace IzzemisMod
                 }
 
                 string modifierId = definition.Id;
-                if (!TryGetHeldWeapon(out ItemDrop.ItemData item))
+                string modifierName = definition.CommandName;
+                if (!TryGetEquippedItem(args, 1, out ItemDrop.ItemData item))
                 {
+                    return;
+                }
+
+                if (!definition.IsAllowedOn(item) &&
+                    ModifierCatalog.TryGetItemCategory(item, out ModifierItemCategory category))
+                {
+                    if (category == ModifierItemCategory.Shield &&
+                        ModifierCatalog.IsTowerShield(item) &&
+                        (definition.EffectType == ModifierEffectType.ParryBonus ||
+                         definition.EffectType == ModifierEffectType.ParryAdrenaline))
+                    {
+                        global::Console.instance.Print(
+                            "Parry modifiers are not available for tower shields.");
+                    }
+                    else
+                    {
+                        global::Console.instance.Print(
+                            $"Modifier '{modifierName}' is not compatible with {ModifierCatalog.GetCategoryDisplayName(category)} items.");
+                    }
+
                     return;
                 }
 
@@ -199,7 +374,7 @@ namespace IzzemisMod
                     if (modifier != null && modifier.Id == modifierId)
                     {
                         global::Console.instance.Print(
-                            $"Held item already has modifier '{modifierId}'.");
+                            $"Equipped item already has modifier '{modifierName}'.");
                         return;
                     }
                 }
@@ -230,7 +405,7 @@ namespace IzzemisMod
 
                 ItemModifierDataStore.Save(item, data);
                 global::Console.instance.Print(
-                    $"Added '{modifierId}' to the held item.");
+                    $"Added '{modifierName}' to the equipped item.");
             }
         }
 
@@ -239,7 +414,7 @@ namespace IzzemisMod
             public override string Name => "remove_modifier";
 
             public override string Help =>
-                "Removes a modifier from the held weapon. Use autocomplete to see available modifiers.";
+                "Removes a modifier from an equipped item. Usage: remove_modifier <modifier> [slot].";
 
             public override List<string> CommandOptionList()
             {
@@ -248,7 +423,7 @@ namespace IzzemisMod
 
             public override void Run(string[] args)
             {
-                if (args.Length != 1 || string.IsNullOrWhiteSpace(args[0]))
+                if (args.Length < 1 || string.IsNullOrWhiteSpace(args[0]) || args.Length > 2)
                 {
                     global::Console.instance.Print(Help);
                     return;
@@ -260,7 +435,8 @@ namespace IzzemisMod
                 }
 
                 string modifierId = definition.Id;
-                if (!TryGetHeldWeapon(out ItemDrop.ItemData item))
+                string modifierName = definition.CommandName;
+                if (!TryGetEquippedItem(args, 1, out ItemDrop.ItemData item))
                 {
                     return;
                 }
@@ -269,7 +445,7 @@ namespace IzzemisMod
                     data.Modifiers == null || data.Modifiers.Length == 0)
                 {
                     global::Console.instance.Print(
-                        $"Held item does not have modifier '{modifierId}'.");
+                        $"Equipped item does not have modifier '{modifierName}'.");
                     return;
                 }
 
@@ -285,7 +461,7 @@ namespace IzzemisMod
                 if (remainingCount == data.Modifiers.Length)
                 {
                     global::Console.instance.Print(
-                        $"Held item does not have modifier '{modifierId}'.");
+                        $"Equipped item does not have modifier '{modifierName}'.");
                     return;
                 }
 
@@ -302,7 +478,7 @@ namespace IzzemisMod
                 data.Modifiers = remainingModifiers;
                 ItemModifierDataStore.Save(item, data);
                 global::Console.instance.Print(
-                    $"Removed '{modifierId}' from the held item.");
+                    $"Removed '{modifierName}' from the equipped item.");
             }
         }
 
