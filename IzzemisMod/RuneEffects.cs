@@ -16,6 +16,22 @@ namespace IzzemisMod
         private const int HelMaxModifiers = 5;
         private const float HelBoostMultiplier = 1.2f;
 
+        // Rounds the magnitude up to the next multiple of the modifier's step, so boosts stay "whole".
+        private static float RoundUpToStep(float value, string id)
+        {
+            ModifierCatalog.TryGetById(id, out ModifierDefinition definition);
+            double step = definition.Step;
+            double steps = Math.Ceiling(Math.Round(Math.Abs(value) / step, 4));
+            return (float)Math.Round(Math.Sign(value) * steps * step, 4);
+        }
+
+        private static bool IsBoostable(ModifierRoll roll)
+        {
+            return roll != null &&
+                ModifierCatalog.TryGetById(roll.Id, out ModifierDefinition definition) &&
+                definition.Step > 0f;
+        }
+
         public static string GetRuneName(ItemDrop.ItemData rune)
         {
             if (!RuneGui.IsRune(rune))
@@ -356,10 +372,15 @@ namespace IzzemisMod
                 default:
                     foreach (ModifierRoll roll in modifiers)
                     {
-                        roll.Value = (float)Math.Round(roll.Value * HelBoostMultiplier, 4);
+                        if (IsBoostable(roll))
+                        {
+                            roll.Value = RoundUpToStep(roll.Value * HelBoostMultiplier, roll.Id);
+                        }
                     }
 
-                    message = "Hel strengthens all modifiers by 20%.";
+                    message = modifiers.Exists(IsBoostable)
+                        ? "Hel strengthens all non-fixed modifiers by 20%."
+                        : "Hel tried to strengthen the modifiers, but all of them are fixed.";
                     break;
             }
 

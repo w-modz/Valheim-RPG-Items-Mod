@@ -215,7 +215,15 @@ namespace IzzemisMod
                 : currentValue + modifierValue;
         }
 
-        public string FormatTooltipLine(float value)
+        public bool IsOverLimit(float value)
+        {
+            const float epsilon = 0.0001f;
+            return StrongestValue >= WeakestValue
+                ? value > StrongestValue + epsilon
+                : value < StrongestValue - epsilon;
+        }
+
+        public string FormatTooltipLine(float value, bool wholeLinePurple = false)
         {
             string formattedValue;
             if (ValueType == ModifierValueType.Percentage ||
@@ -234,8 +242,15 @@ namespace IzzemisMod
                 formattedValue = value.ToString("+0.##;-0.##;0", CultureInfo.InvariantCulture);
             }
 
+            const string purple = "#9B30FF";
+            if (wholeLinePurple)
+            {
+                return $"<color={purple}>{DisplayName}: {formattedValue}</color>";
+            }
+
+            string valueColor = IsOverLimit(value) ? purple : "green";
             return $"<color=#ADD8E6>{DisplayName}:</color> " +
-                $"<color=green>{formattedValue}</color>";
+                $"<color={valueColor}>{formattedValue}</color>";
         }
     }
 
@@ -273,30 +288,43 @@ namespace IzzemisMod
         // Relative chance of a modifier being picked by any rune that adds a random modifier. Missing ids default to 1.
         internal static readonly Dictionary<string, float> Weights = new Dictionary<string, float>
         {
-            { "base_damage", 1f },
+            // Weapons, bows and crossbows (damage)
+            { "base_damage", 5f },
             { "fire_damage", 1f },
             { "frost_damage", 1f },
             { "lightning_damage", 1f },
             { "poison_damage", 1f },
             { "spirit_damage", 1f },
+
+            // Weapons (other)
             { "stamina_cost", 1f },
+            { "backstab_bonus", 2f },
+            { "adrenaline_gain", 1f },
+
+            // Bows and crossbows
             { "bow_draw_stamina", 1f },
             { "crossbow_reload", 1f },
-            { "movement_penalty", 1f },
+
+            // Weapons, shields and armour (shared)
+            { "movement_penalty", 2f },
+
+            // Weapons and shields (shared)
             { "block_armour", 1f },
-            { "parry_bonus", 1f },
-            { "backstab_bonus", 1f },
-            { "adrenaline_gain", 1f },
-            { "shield_block_stamina", 1f },
-            { "shield_movespeed", 1f },
+            { "parry_bonus", 2f },
+
+            // Shields
+            { "shield_block_stamina", 4f },
+            { "shield_movespeed", 2f },
+            { "parry_adrenaline", 1f },
+
+            // Armour
             { "armour_flat", 1f },
-            { "armour_percent", 1f },
-            { "armour_movespeed", 1f },
+            { "armour_percent", 3f },
+            { "armour_movespeed", 2f },
             { "fire_resistance", 1f },
             { "frost_resistance", 1f },
             { "lightning_resistance", 1f },
-            { "poison_resistance", 1f },
-            { "parry_adrenaline", 1f }
+            { "poison_resistance", 1f }
         };
 
         public static float GetWeight(string id)

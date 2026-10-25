@@ -70,7 +70,7 @@ Runes are used from the rune window, opened with the **Runes** button under the 
 | Jotunheim | Adds a modifier to an Epic item, up to 4. |
 | Muspelheim | Destroys a Magic or higher item and grants the matching rune (Magic: Midgard, Rare: Vanaheim, Epic: Alfheim). |
 | Niflheim | Rerolls the values of all modifiers on an item. |
-| Hel | Epic items only. One of four equal outcomes: destroys the item, removes a modifier, adds a bonus 5th modifier, or raises all modifier values by 20% (may exceed normal maximums). The item is then "Touched by Hel": only Nidavellir and Muspelheim can be used on it. It can still be upgraded at crafting stations, keeping its rarity and modifiers. |
+| Hel | Epic items only. One of four equal outcomes: destroys the item, removes a modifier, adds a bonus 5th modifier, or raises all non-fixed modifier values by 20% (may exceed normal maximums; fixed values such as resistances are unchanged). The item is then "Touched by Hel": only Nidavellir and Muspelheim can be used on it. It can still be upgraded at crafting stations, keeping its rarity and modifiers. |
 | Nidavellir | Destroys an item with modifiers and grants a Rune of Valheim holding one of its modifiers at its exact value. |
 | Valheim | Only obtained from Nidavellir (stack size 1). Applies its modifier to an item of the same type as the sacrificed item that has a rarity, a free modifier slot, and does not already have that modifier. |
 

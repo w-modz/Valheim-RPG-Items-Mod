@@ -38,8 +38,11 @@ namespace IzzemisMod
             var modifierLines = new List<string>();
             if (data.Modifiers != null)
             {
+                int maxModifiers = rarityDefinition != null ? rarityDefinition.MaxModifiers : int.MaxValue;
+                int index = -1;
                 foreach (ModifierRoll modifier in data.Modifiers)
                 {
+                    index++;
                     if (modifier == null || string.IsNullOrWhiteSpace(modifier.Id))
                     {
                         continue;
@@ -47,7 +50,7 @@ namespace IzzemisMod
 
                     if (ModifierCatalog.TryGetById(modifier.Id, out ModifierDefinition definition))
                     {
-                        string line = definition.FormatTooltipLine(modifier.Value);
+                        string line = definition.FormatTooltipLine(modifier.Value, index >= maxModifiers);
                         if (definition.EffectType == ModifierEffectType.ParryBonus)
                         {
                             float total = item.m_shared.m_timedBlockBonus + modifier.Value;
