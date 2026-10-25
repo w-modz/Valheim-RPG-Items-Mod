@@ -2,30 +2,64 @@
 
 Author: Izzemi
 
-Adds rarity and damage modifiers to existing Valheim weapons.
+Izzemi's Mod adds rarity tiers and per-item modifiers to existing Valheim equipment. It does not add replacement equipment models or other custom item assets.
 
-## Installation (manual)
+## Installation
 
-Install the package with a compatible Thunderstore mod manager or place the plugin files in `BepInEx/plugins`.
+Install through a compatible Valheim mod manager, or place the plugin DLL in `BepInEx/plugins`. The mod requires BepInEx and Jötunn; mod managers normally install these dependencies automatically.
 
-## Features
+## Current features
 
-- Set rarity on equipped weapons, bows, crossbows, magic weapons, shields, and armour.
-- Add all damage modifiers to bows and crossbows, with category-specific stamina and reload modifiers.
-- Add shield modifiers for block armour, movement, stamina cost, and non-tower-shield parries.
-- Add armour modifiers for armour rating, movement, and separate `fire_resistance`, `frost_resistance`, `lightning_resistance`, and `poison_resistance` effects.
-- Magic weapons remain unsupported for modifiers for now. Incompatible modifiers are rejected by commands.
-- Rarity limits remain Magic: 1, Rare: 2, Epic: 4 modifiers.
-- Current test values: bow draw stamina −2, crossbow reload time −25%, shield block/parry stamina −50%, held shield movement +5%, non-tower shield parry adrenaline +5, armour +4 flat or +20% rounded up to a whole number, armour movement +3%, and 25% resistance per damage type (the strongest equipped resistance applies separately to each type).
-- Existing effects remain: −10% weapon stamina cost, up to +100 percentage points movement penalty reduction (capped at 0 penalty), +20% block armour, +0.5x parry, +1x backstab, and +1 adrenaline per hit.
-- View rarity and modifier details in item tooltips.
-- See rarity colors on item tooltips and visuals.
-- Preserve rarity and modifiers when upgrading an item through the crafting UI.
+- Assign Magic, Rare, or Epic rarity to equipped supported equipment.
+- Add and remove modifiers on individual item instances. Rarity and modifier data are saved in the item's custom data.
+- Show rarity and modifier details on item tooltips. Rarity also affects inventory icon outlines and glow visuals for equipped items and world drops.
+- Preserve rarity and modifiers when an item is upgraded through the crafting UI.
+- Apply modifiers to supported weapons, bows, crossbows, shields, and armour. Magic weapons can be assigned a rarity, but currently have no compatible modifiers.
 
-Commands accept an optional equipped-item slot, such as `set_rarity rare shield` or `modifier fire_damage weapon`. If no slot is given, a command runs only when exactly one supported item is equipped. Use `armour`, `helmet`, `chest`, `legs`, or `cape` to select armour.
+Rarity limits are **Magic: 1 modifier**, **Rare: 2 modifiers**, and **Epic: 4 modifiers**. Rarity can be changed without losing the item's modifiers as long as the new tier's limit is not exceeded.
 
-## Changelog
+## Modifier pools and current test values
 
-- 0.1.0: Initial release.
+The values below are fixed test values in the current implementation.
 
-## Known issues
+| Equipment | Available modifiers |
+| --- | --- |
+| Weapons | `base_damage` (+20% to all damage types), `fire_damage`, `frost_damage`, `lightning_damage`, `poison_damage`, or `spirit_damage` (+10 flat damage of that type); `stamina_cost` (−10% attack stamina); `movement_penalty` (up to +100 percentage points, capped at cancelling the item's negative penalty); `block_armour` (+20% block power); `parry_bonus` (+0.5x); `backstab_bonus` (+1x); `adrenaline_gain` (+1 on hit). |
+| Bows | All damage modifiers above, plus `bow_draw_stamina` (−2 draw stamina). |
+| Crossbows | All damage modifiers above, plus `crossbow_reload` (−25% reload time). |
+| Shields | `block_armour` (+20% block power); `movement_penalty` (cancels up to the shield's negative movement penalty); `shield_movespeed` (+5% movement speed); `shield_block_stamina` (−50% block/parry stamina). Non-tower shields also allow `parry_bonus` (+0.5x) and `parry_adrenaline` (+5 on a successful parry). |
+| Armour | `armour_flat` (+4 armour); `armour_percent` (+20% armour, with the result rounded up to a whole number); `movement_penalty` (only when the piece has a negative movement penalty, capped at cancelling it); `armour_movespeed` (+3% movement speed); and one of `fire_resistance`, `frost_resistance`, `lightning_resistance`, or `poison_resistance` (+25% resistance to that type). |
+
+Resistance modifiers are separate by damage type. For each type, the strongest resistance on equipped armour applies; resistance does not stack across pieces. Movement-penalty reduction cannot turn an item's penalty into a movement bonus.
+
+## Console commands
+
+Open the in-game console and use:
+
+| Command | Usage | Effect |
+| --- | --- | --- |
+| `set_rarity` | `set_rarity <magic\|rare\|epic\|0> [slot]` | Set rarity. Use `0` to clear rarity and all modifiers from the item. |
+| `modifier` | `modifier <modifier_name> [slot]` | Add the named modifier at its current test value. The item must already have a rarity. |
+| `remove_modifier` | `remove_modifier <modifier_name> [slot]` | Remove that modifier from the item. |
+| `dump_item_data` | `dump_item_data` | Print local-player inventory item data for troubleshooting. |
+
+Examples:
+
+```text
+set_rarity rare bow
+modifier bow_draw_stamina bow
+modifier crossbow_reload crossbow
+modifier fire_resistance chest
+remove_modifier fire_resistance chest
+set_rarity 0 chest
+```
+
+The optional slot targets the equipped item. Supported slots are `weapon`, `bow`, `crossbow`, `magic`, `shield`, `armour`, `helmet`, `chest`, `legs`, and `cape`. Use `armour` only when exactly one armour piece is equipped. If the slot is omitted, the command runs only when exactly one supported item is equipped; otherwise, specify a slot. Modifier compatibility is checked for the selected item, and parry modifiers are unavailable on tower shields.
+
+## Not implemented yet
+
+- Runes to upgrade rarity and add modifiers to weapons.
+- Custom GUI for weapon crafting with runes.
+- Automatic rune drops from enemies.
+- A modifier pool for magic weapons.
+- Legendary item variants rarely dropped from enemies, each with unique effects.
