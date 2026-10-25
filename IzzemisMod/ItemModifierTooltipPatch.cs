@@ -37,7 +37,19 @@ namespace IzzemisMod
 
                     if (ModifierCatalog.TryGetById(modifier.Id, out ModifierDefinition definition))
                     {
-                        modifierLines.Add(definition.FormatTooltipLine(modifier.Value));
+                        string line = definition.FormatTooltipLine(modifier.Value);
+                        if (definition.EffectType == ModifierEffectType.ParryBonus)
+                        {
+                            float total = item.m_shared.m_timedBlockBonus + modifier.Value;
+                            line += $" (total: {FormatMultiplier(total)})";
+                        }
+                        else if (definition.EffectType == ModifierEffectType.BackstabBonus)
+                        {
+                            float total = item.m_shared.m_backstabBonus + modifier.Value;
+                            line += $" (total: {FormatMultiplier(total)})";
+                        }
+
+                        modifierLines.Add(line);
                     }
                     else
                     {
@@ -62,6 +74,11 @@ namespace IzzemisMod
 
             tooltip.Set(title, description, __instance.m_tooltipAnchor);
             return false;
+        }
+
+        private static string FormatMultiplier(float value)
+        {
+            return value.ToString("0.##", CultureInfo.InvariantCulture) + "x";
         }
     }
 }
