@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using UnityEngine;
 
 namespace IzzemisMod
@@ -569,13 +570,13 @@ namespace IzzemisMod
             ItemRarityVisuals.RefreshEquippedGlow(player);
         }
 
-        private static void GiveRune(Player player, string runeName, ModifierRoll roll, ModifierItemCategory category = ModifierItemCategory.None)
+        private static ItemDrop.ItemData CreateRuneItem(string runeName, ModifierRoll roll, ModifierItemCategory category)
         {
             GameObject prefab = ObjectDB.instance.GetItemPrefab(RuneGui.RunePrefabPrefix + runeName);
             ItemDrop drop = prefab != null ? prefab.GetComponent<ItemDrop>() : null;
             if (drop == null)
             {
-                return;
+                return null;
             }
 
             ItemDrop.ItemData item = drop.m_itemData.Clone();
@@ -587,6 +588,51 @@ namespace IzzemisMod
                 item.m_customData[ValheimModifierKey] = roll.Id;
                 item.m_customData[ValheimValueKey] = roll.Value.ToString("R", CultureInfo.InvariantCulture);
                 item.m_customData[ValheimCategoryKey] = ((int)category).ToString(CultureInfo.InvariantCulture);
+            }
+
+            return item;
+        }
+
+        // Drops a Rune of Valheim for a random item category holding a random modifier at its maximum value.
+        public static void DropRandomValheimRune(Vector3 position)
+        {
+            var categories = new List<ModifierItemCategory>();
+            foreach (ModifierItemCategory category in new[]
+            {
+                ModifierItemCategory.Weapon, ModifierItemCategory.Bow, ModifierItemCategory.Crossbow,
+                ModifierItemCategory.MagicWeapon, ModifierItemCategory.Shield, ModifierItemCategory.Armour
+            })
+            {
+                if (ModifierCatalog.All.Any(d => (d.AllowedItemCategories & category) != 0))
+                {
+                    categories.Add(category);
+                }
+            }
+
+            if (categories.Count == 0)
+            {
+                return;
+            }
+
+            ModifierItemCategory chosenCategory = categories[UnityEngine.Random.Range(0, categories.Count)];
+            var pool = ModifierCatalog.All.Where(d => (d.AllowedItemCategories & chosenCategory) != 0).ToList();
+            ModifierDefinition chosen = pool[UnityEngine.Random.Range(0, pool.Count)];
+            ItemDrop.ItemData item = CreateRuneItem(
+                ValheimRuneName,
+                new ModifierRoll { Id = chosen.Id, Value = chosen.StrongestValue },
+                chosenCategory);
+            if (item != null)
+            {
+                ItemDrop.DropItem(item, 1, position, Quaternion.identity);
+            }
+        }
+
+        private static void GiveRune(Player player, string runeName, ModifierRoll roll, ModifierItemCategory category = ModifierItemCategory.None)
+        {
+            ItemDrop.ItemData item = CreateRuneItem(runeName, roll, category);
+            if (item == null)
+            {
+                return;
             }
 
             if (!player.GetInventory().AddItem(item))

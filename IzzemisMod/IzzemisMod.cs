@@ -25,6 +25,7 @@ namespace IzzemisMod
             ModCommands.Register();
             RuneItems.Register();
             RuneGui.Bind(Config);
+            RuneDrops.Bind(Config);
         }
 
         private void Update()

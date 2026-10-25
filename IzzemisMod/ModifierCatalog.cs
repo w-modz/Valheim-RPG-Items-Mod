@@ -572,6 +572,12 @@ namespace IzzemisMod
             }
 
             ItemDrop.ItemData.ItemType itemType = item.m_shared.m_itemType;
+            if (itemType == ItemDrop.ItemData.ItemType.Ammo ||
+                itemType == ItemDrop.ItemData.ItemType.AmmoNonEquipable)
+            {
+                return false;
+            }
+
             if (itemType == ItemDrop.ItemData.ItemType.Shield)
             {
                 category = ModifierItemCategory.Shield;
