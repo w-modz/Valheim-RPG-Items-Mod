@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\Icons\*.png" LogicalName="Icons.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets\Bundles\runebundle" LogicalName="Bundles.runebundle" />
   </ItemGroup>
 
   <ItemGroup>

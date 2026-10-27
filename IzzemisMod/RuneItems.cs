@@ -74,15 +74,103 @@ namespace IzzemisMod
                 new Color(1f, 1f, 1f)),
         };
 
+        private const string BundleResource = "Bundles.runebundle";
+        private const string BundlePrefabPath = "assets/rune/rune.prefab";
+
         public static void Register()
         {
             PrefabManager.OnVanillaPrefabsAvailable += AddRunes;
+        }
+
+        private static GameObject LoadModelPrefab()
+        {
+            try
+            {
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(BundleResource))
+                {
+                    if (stream == null)
+                    {
+                        Jotunn.Logger.LogWarning("Rune bundle resource not found; using the placeholder model.");
+                        return null;
+                    }
+
+                    AssetBundle bundle = AssetBundle.LoadFromStream(stream);
+                    if (bundle == null)
+                    {
+                        Jotunn.Logger.LogWarning("Rune bundle could not be loaded; using the placeholder model.");
+                        return null;
+                    }
+
+                    GameObject model = bundle.LoadAsset<GameObject>(BundlePrefabPath);
+                    if (model == null)
+                    {
+                        Jotunn.Logger.LogWarning($"'{BundlePrefabPath}' not found in the rune bundle. Assets: {string.Join(", ", bundle.GetAllAssetNames())}");
+                    }
+
+                    return model;
+                }
+            }
+            catch (Exception ex)
+            {
+                Jotunn.Logger.LogWarning($"Failed to load the rune model: {ex.Message}");
+                return null;
+            }
+        }
+
+        // Replaces the placeholder's mesh, material and collider with the bundled model.
+        private static void ApplyModel(GameObject prefab, GameObject model)
+        {
+            MeshFilter modelFilter = model.GetComponentInChildren<MeshFilter>(true);
+            MeshRenderer modelRenderer = model.GetComponentInChildren<MeshRenderer>(true);
+            if (modelFilter == null || modelRenderer == null)
+            {
+                return;
+            }
+
+            MeshRenderer[] renderers = prefab.GetComponentsInChildren<MeshRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                MeshRenderer renderer = renderers[i];
+                if (i > 0)
+                {
+                    renderer.enabled = false;
+                    continue;
+                }
+
+                MeshFilter filter = renderer.GetComponent<MeshFilter>();
+                if (filter == null)
+                {
+                    filter = renderer.gameObject.AddComponent<MeshFilter>();
+                }
+
+                filter.sharedMesh = modelFilter.sharedMesh;
+                renderer.sharedMaterials = modelRenderer.sharedMaterials;
+                renderer.transform.localPosition = modelFilter.transform.localPosition;
+                renderer.transform.localRotation = modelFilter.transform.localRotation;
+                renderer.transform.localScale = modelFilter.transform.localScale;
+            }
+
+            BoxCollider modelCollider = model.GetComponentInChildren<BoxCollider>(true);
+            if (modelCollider == null)
+            {
+                return;
+            }
+
+            foreach (Collider existing in prefab.GetComponentsInChildren<Collider>(true))
+            {
+                UnityEngine.Object.Destroy(existing);
+            }
+
+            BoxCollider collider = prefab.AddComponent<BoxCollider>();
+            collider.center = modelCollider.center;
+            collider.size = modelCollider.size;
         }
 
         private static void AddRunes()
         {
             PrefabManager.OnVanillaPrefabsAvailable -= AddRunes;
 
+            GameObject model = LoadModelPrefab();
             foreach (RuneDefinition rune in Runes)
             {
                 ItemConfig config = new ItemConfig
@@ -94,6 +182,10 @@ namespace IzzemisMod
                 };
 
                 CustomItem customItem = new CustomItem(rune.PrefabName, PlaceholderBasePrefab, config);
+                if (model != null)
+                {
+                    ApplyModel(customItem.ItemPrefab, model);
+                }
                 if (rune.PrefabName == "IzzemisMod_RuneValheim")
                 {
                     customItem.ItemDrop.m_itemData.m_shared.m_maxStackSize = 1;
