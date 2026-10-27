@@ -30,6 +30,7 @@ Requirements: Windows, a Valheim install with BepInEx and [Jötunn](https://valh
 
 ## Current features
 
+- New rune items, with custom sprites and model, to augment your equipment.
 - Assign Magic, Rare, or Epic rarity to equipped supported equipment.
 - Add and remove modifiers on individual item instances. Rarity and modifier data are saved in the item's custom data.
 - Show rarity and modifier details on item tooltips. Rarity also affects inventory icon outlines and glow visuals for equipped items and world drops.
@@ -111,7 +112,7 @@ Configuration (`BepInEx/config/com.izzemi.izzemismod.cfg`, section `Rune Drops`)
 
 ## Not implemented yet
 
-- In-game model for dropped runes (currently using placeholder).
 - A modifier pool for magic weapons.
+- More modifiers for existing item pools.
 - Additional random effects for enemies with stars, that increase their strength and dropped rewards.
 - Legendary item variants rarely dropped from enemies, each with unique effects.
