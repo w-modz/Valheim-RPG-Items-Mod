@@ -373,8 +373,7 @@ namespace IzzemisMod
                 {
                     if (category == ModifierItemCategory.Shield &&
                         ModifierCatalog.IsTowerShield(item) &&
-                        (definition.EffectType == ModifierEffectType.ParryBonus ||
-                         definition.EffectType == ModifierEffectType.ParryAdrenaline))
+                        ModifierDefinition.IsParryOnlyEffect(definition.EffectType))
                     {
                         global::Console.instance.Print(
                             "Parry modifiers are not available for tower shields.");

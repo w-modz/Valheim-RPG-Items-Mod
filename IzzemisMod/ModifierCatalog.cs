@@ -59,7 +59,20 @@ namespace IzzemisMod
         FrostResistance,
         LightningResistance,
         PoisonResistance,
-        ParryAdrenaline
+        ParryAdrenaline,
+        ProjectileSpeed,
+        AmmoSaveChance,
+        ExtraProjectileChance,
+        ParryDamage,
+        ParryHealth,
+        ParryStamina,
+        HealthRegen,
+        StaminaRegen,
+        MaxHealth,
+        AdrenalineOnHit,
+        DodgeStaminaCost,
+        Thorns,
+        SkillLevel
     }
 
     internal sealed class ModifierDefinition
@@ -78,6 +91,8 @@ namespace IzzemisMod
         public ModifierValueType ValueType { get; }
         public ModifierEffectType EffectType { get; }
         public ModifierItemCategory AllowedItemCategories { get; }
+        // Only used by SkillLevel modifiers.
+        public Skills.SkillType Skill { get; }
 
         public ModifierDefinition(
             string id,
@@ -87,7 +102,8 @@ namespace IzzemisMod
             ModifierDamageChannel damageChannel,
             ModifierValueType valueType,
             ModifierEffectType effectType = ModifierEffectType.None,
-            ModifierItemCategory allowedItemCategories = ModifierItemCategory.Weapon)
+            ModifierItemCategory allowedItemCategories = ModifierItemCategory.Weapon,
+            Skills.SkillType skill = Skills.SkillType.None)
         {
             Id = id;
             CommandName = commandName;
@@ -110,6 +126,7 @@ namespace IzzemisMod
             ValueType = valueType;
             EffectType = effectType;
             AllowedItemCategories = allowedItemCategories;
+            Skill = skill;
         }
 
         // Converts a value typed as shown in the tooltip (e.g. 25 for 25%) to the stored value.
@@ -148,10 +165,19 @@ namespace IzzemisMod
                 return false;
             }
 
-            return (EffectType != ModifierEffectType.ParryBonus &&
-                    EffectType != ModifierEffectType.ParryAdrenaline) ||
+            return !IsParryOnlyEffect(EffectType) ||
                 category != ModifierItemCategory.Shield ||
                 !ModifierCatalog.IsTowerShield(item);
+        }
+
+        // Effects that need a timed (parry) block, which tower shields lack.
+        public static bool IsParryOnlyEffect(ModifierEffectType effectType)
+        {
+            return effectType == ModifierEffectType.ParryBonus ||
+                effectType == ModifierEffectType.ParryAdrenaline ||
+                effectType == ModifierEffectType.ParryDamage ||
+                effectType == ModifierEffectType.ParryHealth ||
+                effectType == ModifierEffectType.ParryStamina;
         }
 
         public void ApplyDamage(ref HitData.DamageTypes damage, float value)
@@ -236,6 +262,10 @@ namespace IzzemisMod
             {
                 formattedValue = value.ToString(
                     "+0.##;-0.##;0", CultureInfo.InvariantCulture) + "x";
+                if (EffectType == ModifierEffectType.ParryDamage)
+                {
+                    formattedValue += " block armor";
+                }
             }
             else
             {
@@ -268,6 +298,9 @@ namespace IzzemisMod
             { "stamina_cost", new[] { -0.05f, -0.15f, 0.01f } },
             { "bow_draw_stamina", new[] { -1f, -3f, 1f } },
             { "crossbow_reload", new[] { -0.25f, -0.25f, 0f } },
+            { "projectile_speed", new[] { 0.25f, 1.00f, 0.05f } },
+            { "ammo_save_chance", new[] { 0.25f, 0.50f, 0.01f } },
+            { "extra_projectile_chance", new[] { 0.25f, 0.50f, 0.01f } },
             { "movement_penalty", new[] { 0.5f, 1f, 0.05f } },
             { "block_armour", new[] { 0.10f, 0.30f, 0.01f } },
             { "parry_bonus", new[] { 0.25f, 0.75f, 0.05f } },
@@ -282,7 +315,27 @@ namespace IzzemisMod
             { "frost_resistance", new[] { 0.25f, 0.25f, 0f } },
             { "lightning_resistance", new[] { 0.25f, 0.25f, 0f } },
             { "poison_resistance", new[] { 0.25f, 0.25f, 0f } },
-            { "parry_adrenaline", new[] { 3f, 7f, 1f } }
+            { "parry_adrenaline", new[] { 3f, 7f, 1f } },
+            { "parry_damage", new[] { 1f, 2f, 0.1f } },
+            { "parry_health", new[] { 5f, 10f, 1f } },
+            { "parry_stamina", new[] { 10f, 20f, 1f } },
+            { "health_regen", new[] { 0.05f, 0.15f, 0.01f } },
+            { "stamina_regen", new[] { 0.05f, 0.15f, 0.01f } },
+            { "max_health", new[] { 2f, 5f, 1f } },
+            { "adrenaline_on_hit", new[] { 1f, 4f, 1f } },
+            { "dodge_stamina", new[] { -0.05f, -0.15f, 0.01f } },
+            { "thorns", new[] { 0.20f, 0.40f, 0.01f } },
+            { "skill_axes", new[] { 10f, 20f, 1f } },
+            { "skill_blood_magic", new[] { 10f, 20f, 1f } },
+            { "skill_bows", new[] { 10f, 20f, 1f } },
+            { "skill_clubs", new[] { 10f, 20f, 1f } },
+            { "skill_crossbows", new[] { 10f, 20f, 1f } },
+            { "skill_elemental_magic", new[] { 10f, 20f, 1f } },
+            { "skill_fists", new[] { 10f, 20f, 1f } },
+            { "skill_knives", new[] { 10f, 20f, 1f } },
+            { "skill_polearms", new[] { 10f, 20f, 1f } },
+            { "skill_spears", new[] { 10f, 20f, 1f } },
+            { "skill_swords", new[] { 10f, 20f, 1f } }
         };
 
         // Relative chance of a modifier being picked by any rune that adds a random modifier. Missing ids default to 1.
@@ -302,8 +355,11 @@ namespace IzzemisMod
             { "adrenaline_gain", 1f },
 
             // Bows and crossbows
-            { "bow_draw_stamina", 1f },
+            { "bow_draw_stamina", 2f },
             { "crossbow_reload", 1f },
+            { "projectile_speed", 2f },
+            { "ammo_save_chance", 2f },
+            { "extra_projectile_chance", 1f },
 
             // Weapons, shields and armour (shared)
             { "movement_penalty", 2f },
@@ -316,6 +372,9 @@ namespace IzzemisMod
             { "shield_block_stamina", 4f },
             { "shield_movespeed", 2f },
             { "parry_adrenaline", 1f },
+            { "parry_damage", 1f },
+            { "parry_health", 1f },
+            { "parry_stamina", 1f },
 
             // Armour
             { "armour_flat", 1f },
@@ -324,7 +383,26 @@ namespace IzzemisMod
             { "fire_resistance", 1f },
             { "frost_resistance", 1f },
             { "lightning_resistance", 1f },
-            { "poison_resistance", 1f }
+            { "poison_resistance", 1f },
+            { "health_regen", 1f },
+            { "stamina_regen", 1f },
+            { "max_health", 1f },
+            { "adrenaline_on_hit", 1f },
+            { "dodge_stamina", 1f },
+            { "thorns", 2f },
+
+            // Armour skill bonuses (one entry per skill, so keep each low)
+            { "skill_axes", 0.2f },
+            { "skill_blood_magic", 0.2f },
+            { "skill_bows", 0.2f },
+            { "skill_clubs", 0.2f },
+            { "skill_crossbows", 0.2f },
+            { "skill_elemental_magic", 0.2f },
+            { "skill_fists", 0.2f },
+            { "skill_knives", 0.2f },
+            { "skill_polearms", 0.2f },
+            { "skill_spears", 0.2f },
+            { "skill_swords", 0.2f }
         };
 
         public static float GetWeight(string id)
@@ -420,6 +498,33 @@ namespace IzzemisMod
                 ModifierValueType.Percentage,
                 ModifierEffectType.ReloadTime,
                 ModifierItemCategory.Crossbow),
+            new ModifierDefinition(
+                "projectile_speed",
+                "projectile_speed",
+                "Projectile speed",
+                0.6f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.ProjectileSpeed,
+                ModifierItemCategory.Bow | ModifierItemCategory.Crossbow),
+            new ModifierDefinition(
+                "ammo_save_chance",
+                "ammo_save_chance",
+                "Chance to not consume ammo",
+                0.35f,
+                ModifierDamageChannel.None,
+                ModifierValueType.PercentagePoints,
+                ModifierEffectType.AmmoSaveChance,
+                ModifierItemCategory.Bow | ModifierItemCategory.Crossbow),
+            new ModifierDefinition(
+                "extra_projectile_chance",
+                "extra_projectile_chance",
+                "Chance to fire 2 extra projectiles",
+                0.4f,
+                ModifierDamageChannel.None,
+                ModifierValueType.PercentagePoints,
+                ModifierEffectType.ExtraProjectileChance,
+                ModifierItemCategory.Bow | ModifierItemCategory.Crossbow),
             new ModifierDefinition(
                 "movement_penalty",
                 "movement_penalty",
@@ -556,8 +661,117 @@ namespace IzzemisMod
                 ModifierDamageChannel.None,
                 ModifierValueType.Flat,
                 ModifierEffectType.ParryAdrenaline,
-                ModifierItemCategory.Shield)
+                ModifierItemCategory.Shield),
+            new ModifierDefinition(
+                "parry_damage",
+                "parry_damage",
+                "Blunt damage on parry",
+                1.5f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Multiplier,
+                ModifierEffectType.ParryDamage,
+                ModifierItemCategory.Shield),
+            new ModifierDefinition(
+                "parry_health",
+                "parry_health",
+                "Health on parry",
+                7.5f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Flat,
+                ModifierEffectType.ParryHealth,
+                ModifierItemCategory.Shield),
+            new ModifierDefinition(
+                "parry_stamina",
+                "parry_stamina",
+                "Stamina on parry",
+                15f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Flat,
+                ModifierEffectType.ParryStamina,
+                ModifierItemCategory.Shield),
+            new ModifierDefinition(
+                "health_regen",
+                "health_regen",
+                "Health regeneration",
+                0.1f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.HealthRegen,
+                ModifierItemCategory.Armour),
+            new ModifierDefinition(
+                "stamina_regen",
+                "stamina_regen",
+                "Stamina regeneration",
+                0.1f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.StaminaRegen,
+                ModifierItemCategory.Armour),
+            new ModifierDefinition(
+                "max_health",
+                "max_health",
+                "Max health",
+                3.5f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Flat,
+                ModifierEffectType.MaxHealth,
+                ModifierItemCategory.Armour),
+            new ModifierDefinition(
+                "adrenaline_on_hit",
+                "adrenaline_on_hit",
+                "Adrenaline when damaged",
+                2.5f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Flat,
+                ModifierEffectType.AdrenalineOnHit,
+                ModifierItemCategory.Armour),
+            new ModifierDefinition(
+                "dodge_stamina",
+                "dodge_stamina",
+                "Dodge roll stamina cost",
+                -0.1f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.DodgeStaminaCost,
+                ModifierItemCategory.Armour),
+            new ModifierDefinition(
+                "thorns",
+                "thorns",
+                "Thorns damage (pierce, % of total armour)",
+                0.3f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.Thorns,
+                ModifierItemCategory.Armour),
+            SkillDefinition("skill_axes", "Axes", Skills.SkillType.Axes),
+            SkillDefinition("skill_blood_magic", "Blood magic", Skills.SkillType.BloodMagic),
+            SkillDefinition("skill_bows", "Bows", Skills.SkillType.Bows),
+            SkillDefinition("skill_clubs", "Clubs", Skills.SkillType.Clubs),
+            SkillDefinition("skill_crossbows", "Crossbows", Skills.SkillType.Crossbows),
+            SkillDefinition("skill_elemental_magic", "Elemental magic", Skills.SkillType.ElementalMagic),
+            SkillDefinition("skill_fists", "Fists", Skills.SkillType.Unarmed),
+            SkillDefinition("skill_knives", "Knives", Skills.SkillType.Knives),
+            SkillDefinition("skill_polearms", "Polearms", Skills.SkillType.Polearms),
+            SkillDefinition("skill_spears", "Spears", Skills.SkillType.Spears),
+            SkillDefinition("skill_swords", "Swords", Skills.SkillType.Swords)
         };
+
+        private static ModifierDefinition SkillDefinition(
+            string id,
+            string name,
+            Skills.SkillType skill)
+        {
+            return new ModifierDefinition(
+                id,
+                id,
+                name + " skill",
+                15f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Flat,
+                ModifierEffectType.SkillLevel,
+                ModifierItemCategory.Armour,
+                skill);
+        }
 
         public static IReadOnlyList<ModifierDefinition> All => Definitions;
 
