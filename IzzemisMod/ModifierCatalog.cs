@@ -72,7 +72,20 @@ namespace IzzemisMod
         AdrenalineOnHit,
         DodgeStaminaCost,
         Thorns,
-        SkillLevel
+        SkillLevel,
+        AttackEitrCost,
+        ShieldOnUse,
+        AoeRadius,
+        EitrRegen,
+        MagicExtraProjectile,
+        SummonRoots,
+        BloodHealthCost,
+        BloodHealthToStamina,
+        LowHealthEffect,
+        ShieldAllyHeal,
+        SummonMaxCount,
+        ExtraSummonChance,
+        ExtraSummonStars
     }
 
     internal sealed class ModifierDefinition
@@ -161,6 +174,46 @@ namespace IzzemisMod
 
             if (EffectType == ModifierEffectType.MovementPenalty &&
                 item.m_shared.m_movementModifier >= 0f)
+            {
+                return false;
+            }
+
+            if (EffectType == ModifierEffectType.AoeRadius && !MagicWeaponInfo.HasAoe(item))
+            {
+                return false;
+            }
+
+            if ((EffectType == ModifierEffectType.MagicExtraProjectile ||
+                 EffectType == ModifierEffectType.SummonRoots) &&
+                item.m_shared.m_skillType != Skills.SkillType.ElementalMagic)
+            {
+                return false;
+            }
+
+            if ((EffectType == ModifierEffectType.BloodHealthCost ||
+                 EffectType == ModifierEffectType.BloodHealthToStamina ||
+                 EffectType == ModifierEffectType.LowHealthEffect) &&
+                item.m_shared.m_skillType != Skills.SkillType.BloodMagic)
+            {
+                return false;
+            }
+
+            if (EffectType == ModifierEffectType.ShieldAllyHeal &&
+                !StaffShieldSource.IsStaffOfProtection(item))
+            {
+                return false;
+            }
+
+            if ((EffectType == ModifierEffectType.SummonMaxCount ||
+                 EffectType == ModifierEffectType.ExtraSummonChance ||
+                 EffectType == ModifierEffectType.ExtraSummonStars) &&
+                !SummonWeaponInfo.HasSummonAbility(item))
+            {
+                return false;
+            }
+
+            if (EffectType == ModifierEffectType.MagicExtraProjectile &&
+                !MagicWeaponInfo.FiresProjectile(item))
             {
                 return false;
             }
@@ -296,6 +349,19 @@ namespace IzzemisMod
             { "poison_damage", new[] { 5f, 15f, 1f } },
             { "spirit_damage", new[] { 5f, 15f, 1f } },
             { "stamina_cost", new[] { -0.05f, -0.15f, 0.01f } },
+            { "eitr_cost", new[] { -0.10f, -0.20f, 0.01f } },
+            { "shield_on_use", new[] { 0.10f, 0.20f, 0.01f } },
+            { "aoe_radius", new[] { 0.25f, 0.50f, 0.01f } },
+            { "eitr_regen", new[] { 0.15f, 0.30f, 0.01f } },
+            { "magic_extra_projectile", new[] { 0.10f, 0.25f, 0.01f } },
+            { "summon_roots", new[] { 0.10f, 0.20f, 0.01f } },
+            { "blood_health_cost", new[] { 0.10f, 0.30f, 0.01f } },
+            { "blood_health_to_stamina", new[] { 0.10f, 0.30f, 0.01f } },
+            { "low_health_effect", new[] { 0.25f, 0.50f, 0.01f } },
+            { "shield_ally_heal", new[] { 20f, 40f, 1f } },
+            { "summon_max_count", new[] { 1f, 2f, 1f } },
+            { "extra_summon_chance", new[] { 0.15f, 0.30f, 0.01f } },
+            { "extra_summon_stars", new[] { 0.25f, 0.50f, 0.01f } },
             { "bow_draw_stamina", new[] { -1f, -3f, 1f } },
             { "crossbow_reload", new[] { -0.25f, -0.25f, 0f } },
             { "projectile_speed", new[] { 0.25f, 1.00f, 0.05f } },
@@ -351,6 +417,19 @@ namespace IzzemisMod
 
             // Weapons (other)
             { "stamina_cost", 1f },
+            { "eitr_cost", 1f },
+            { "shield_on_use", 1f },
+            { "aoe_radius", 1f },
+            { "eitr_regen", 1f },
+            { "magic_extra_projectile", 1f },
+            { "summon_roots", 1f },
+            { "blood_health_cost", 1f },
+            { "blood_health_to_stamina", 1f },
+            { "low_health_effect", 1f },
+            { "shield_ally_heal", 1f },
+            { "summon_max_count", 1f },
+            { "extra_summon_chance", 1f },
+            { "extra_summon_stars", 1f },
             { "backstab_bonus", 2f },
             { "adrenaline_gain", 1f },
 
@@ -420,6 +499,7 @@ namespace IzzemisMod
                 ModifierDamageChannel.All,
                 ModifierValueType.Percentage,
                 allowedItemCategories: ModifierItemCategory.Weapon |
+                    ModifierItemCategory.MagicWeapon |
                     ModifierItemCategory.Bow |
                     ModifierItemCategory.Crossbow),
             new ModifierDefinition(
@@ -481,6 +561,123 @@ namespace IzzemisMod
                 ModifierValueType.Percentage,
                 ModifierEffectType.AttackStaminaCost),
             new ModifierDefinition(
+                "eitr_cost",
+                "eitr_cost",
+                "Weapon eitr cost",
+                -0.15f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.AttackEitrCost,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "shield_on_use",
+                "shield_on_use",
+                "Chance to gain a shield on use",
+                0.15f,
+                ModifierDamageChannel.None,
+                ModifierValueType.PercentagePoints,
+                ModifierEffectType.ShieldOnUse,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "aoe_radius",
+                "aoe_radius",
+                "Area of effect radius",
+                0.35f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.AoeRadius,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "eitr_regen",
+                "eitr_regen",
+                "Eitr regeneration while held",
+                0.2f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.EitrRegen,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "magic_extra_projectile",
+                "magic_extra_projectile",
+                "Chance for additional projectiles",
+                0.15f,
+                ModifierDamageChannel.None,
+                ModifierValueType.PercentagePoints,
+                ModifierEffectType.MagicExtraProjectile,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "summon_roots",
+                "summon_roots",
+                "Chance to summon roots on use",
+                0.15f,
+                ModifierDamageChannel.None,
+                ModifierValueType.PercentagePoints,
+                ModifierEffectType.SummonRoots,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "blood_health_cost",
+                "blood_health_cost",
+                "Blood magic health cost",
+                0.2f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.BloodHealthCost,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "blood_health_to_stamina",
+                "blood_health_to_stamina",
+                "Convert health cost to stamina cost",
+                0.2f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.BloodHealthToStamina,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "low_health_effect",
+                "low_health_effect",
+                "Effect while below 50% health",
+                0.35f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Percentage,
+                ModifierEffectType.LowHealthEffect,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "shield_ally_heal",
+                "shield_ally_heal",
+                "Heal nearby allies when shield is granted",
+                30f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Flat,
+                ModifierEffectType.ShieldAllyHeal,
+                ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "summon_max_count",
+                "summon_max_count",
+                "Maximum summons",
+                1f,
+                ModifierDamageChannel.None,
+                ModifierValueType.Flat,
+                ModifierEffectType.SummonMaxCount,
+                ModifierItemCategory.Weapon | ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "extra_summon_chance",
+                "extra_summon_chance",
+                "Chance to spawn an extra summon",
+                0.225f,
+                ModifierDamageChannel.None,
+                ModifierValueType.PercentagePoints,
+                ModifierEffectType.ExtraSummonChance,
+                ModifierItemCategory.Weapon | ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
+                "extra_summon_stars",
+                "extra_summon_stars",
+                "Chance for extra summon stars (max 2)",
+                0.375f,
+                ModifierDamageChannel.None,
+                ModifierValueType.PercentagePoints,
+                ModifierEffectType.ExtraSummonStars,
+                ModifierItemCategory.Weapon | ModifierItemCategory.MagicWeapon),
+            new ModifierDefinition(
                 "bow_draw_stamina",
                 "bow_draw_stamina",
                 "Bow draw stamina cost",
@@ -534,6 +731,7 @@ namespace IzzemisMod
                 ModifierValueType.PercentagePoints,
                 ModifierEffectType.MovementPenalty,
                 ModifierItemCategory.Weapon |
+                    ModifierItemCategory.MagicWeapon |
                     ModifierItemCategory.Shield |
                     ModifierItemCategory.Armour),
             new ModifierDefinition(
@@ -545,6 +743,7 @@ namespace IzzemisMod
                 ModifierValueType.Percentage,
                 ModifierEffectType.BlockPower,
                 ModifierItemCategory.Weapon |
+                    ModifierItemCategory.MagicWeapon |
                     ModifierItemCategory.Shield),
             new ModifierDefinition(
                 "parry_bonus",

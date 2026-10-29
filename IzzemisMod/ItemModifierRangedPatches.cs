@@ -90,11 +90,16 @@ namespace IzzemisMod
             if (Firing ||
                 weapon == null ||
                 PerBurstUsage(__instance) ||
-                !ModifierCatalog.TryGetModifierValue(
+                !(ModifierCatalog.TryGetModifierValue(
                     weapon,
                     ModifierEffectType.ExtraProjectileChance,
                     out _,
                     out float chance) ||
+                  ModifierCatalog.TryGetModifierValue(
+                    weapon,
+                    ModifierEffectType.MagicExtraProjectile,
+                    out _,
+                    out chance)) ||
                 Random.value >= chance)
             {
                 return;

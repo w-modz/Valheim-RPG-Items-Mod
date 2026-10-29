@@ -24,6 +24,26 @@ namespace IzzemisMod
         }
     }
 
+    [HarmonyPatch(
+        typeof(Attack),
+        nameof(Attack.GetAttackEitr),
+        new[] { typeof(Character), typeof(ItemDrop.ItemData) })]
+    internal static class WeaponEitrModifierPatch
+    {
+        private static void Postfix(ItemDrop.ItemData weapon, ref float __result)
+        {
+            if (weapon != null &&
+                ModifierCatalog.TryGetModifierValue(
+                    weapon,
+                    ModifierEffectType.AttackEitrCost,
+                    out ModifierDefinition definition,
+                    out float value))
+            {
+                __result = Math.Max(0f, definition.ApplyScalar(__result, value));
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetDrawStaminaDrain))]
     internal static class BowDrawStaminaModifierPatch
     {

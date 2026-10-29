@@ -460,7 +460,8 @@ namespace IzzemisMod
                 return false;
             }
 
-            if (category != runeCategory)
+            if (category != runeCategory &&
+                (definition.AllowedItemCategories & category) == 0)
             {
                 message = $"This rune can only be used on {ModifierCatalog.GetCategoryDisplayName(runeCategory)} items.";
                 return false;
