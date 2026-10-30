@@ -6,13 +6,13 @@ param([string]$cmdarg = "")
 
 Write-Host ""
 Write-Host ""
-Write-Host "WELCOME TO IZZEMISMOD RENAMING UTILITY"
+Write-Host "WELCOME TO RUNECARVED RENAMING UTILITY"
 Write-Host "-----------------------------------------"
 Write-Host ""
 Write-Host "This script will do the following:"
 Write-Host ""
 Write-Host ""
-Write-Host "1. Change the file names, folder names, and project references from IzzemisMod to your custom solution name."
+Write-Host "1. Change the file names, folder names, and project references from Runecarved to your custom solution name."
 Write-Host ""
 Write-Host "2. Change the DoPrebuild.props file."
 Write-Host ""
@@ -62,7 +62,7 @@ Write-Host "     . . . Renaming files and folders to '$Name' . . ."
 Move-Item -Path ..\$Name\JotunnModStub -Destination ..\$Name\$Name
 $unity = $Name + "Unity"
 Move-Item -Path ..\$Name\JotunnModStubUnity -Destination ..\$Name\$unity
-Get-ChildItem -Path ..\$Name\ -File -Recurse | % -Process{if($_.Name -ne "IzzemisMod.zip") {Rename-Item -Path $_.PSPath -NewName $_.Name.replace("IzzemisMod", $Name)}}
+Get-ChildItem -Path ..\$Name\ -File -Recurse | % -Process{if($_.Name -ne "Runecarved.zip") {Rename-Item -Path $_.PSPath -NewName $_.Name.replace("Runecarved", $Name)}}
 }
 else{
 Write-Host "Error: empty solution name"
@@ -71,13 +71,13 @@ Exit 0
 }
 
 #Rename internal references
-$msg = "     . . . Replacing internal references to 'IzzemisMod' with " + '($Name)' + " . . ."
+$msg = "     . . . Replacing internal references to 'Runecarved' with " + '($Name)' + " . . ."
 Write-Host $msg
-((Get-Content -path ..\$Name\$Name.sln -Raw) -replace 'IzzemisMod',$Name) | Set-Content -Path ..\$Name\$Name.sln
-((Get-Content -path ..\$Name\$Name\$Name.cs -Raw) -replace 'IzzemisMod',$Name) | Set-Content -Path ..\$Name\$Name\$Name.cs
-((Get-Content -path ..\$Name\$Name\$Name.csproj -Raw) -replace 'IzzemisMod',$Name) | Set-Content -Path ..\$Name\$Name\$Name.csproj
+((Get-Content -path ..\$Name\$Name.sln -Raw) -replace 'Runecarved',$Name) | Set-Content -Path ..\$Name\$Name.sln
+((Get-Content -path ..\$Name\$Name\$Name.cs -Raw) -replace 'Runecarved',$Name) | Set-Content -Path ..\$Name\$Name\$Name.cs
+((Get-Content -path ..\$Name\$Name\$Name.csproj -Raw) -replace 'Runecarved',$Name) | Set-Content -Path ..\$Name\$Name\$Name.csproj
 ((Get-Content -path ..\$Name\$Name\$Name.csproj -Raw) -replace 'JotunnModStubUnity',$unity) | Set-Content -Path ..\$Name\$Name\$Name.csproj
-((Get-Content -path ..\$Name\$Name\Properties\AssemblyInfo.cs -Raw) -replace 'IzzemisMod',$Name) | Set-Content -Path ..\$Name\$Name\Properties\AssemblyInfo.cs
+((Get-Content -path ..\$Name\$Name\Properties\AssemblyInfo.cs -Raw) -replace 'Runecarved',$Name) | Set-Content -Path ..\$Name\$Name\Properties\AssemblyInfo.cs
 
 
 

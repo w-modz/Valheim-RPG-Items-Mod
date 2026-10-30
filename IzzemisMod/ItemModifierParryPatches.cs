@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     [HarmonyPatch(typeof(Humanoid), "BlockAttack")]
     internal static class ParryRewardModifierPatch

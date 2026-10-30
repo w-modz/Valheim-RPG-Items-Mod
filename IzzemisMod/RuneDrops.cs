@@ -3,7 +3,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     internal enum DropGroup
     {

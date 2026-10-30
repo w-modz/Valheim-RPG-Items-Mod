@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     [HarmonyPatch(typeof(Attack), nameof(Attack.GetAttackStamina))]
     internal static class WeaponStaminaModifierPatch

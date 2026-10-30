@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     [HarmonyPatch(typeof(ItemDrop), nameof(ItemDrop.Start))]
     internal static class WorldDropRarityGlowPatch

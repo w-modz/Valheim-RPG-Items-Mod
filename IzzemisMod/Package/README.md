@@ -1,14 +1,25 @@
-# Izzemi's Mod
+# Runecarved
 
 Author: Izzemi
 
 Built on the [Jotunn mod stub](https://github.com/Valheim-Modding/JotunnModStub) by the Valheim Modding Community.
 
-Izzemi’s Mod (working title) adds rarity tiers and per-item modifiers to existing Valheim equipment, creating a more varied and unpredictable gear progression.
+Runecarved adds rarity tiers and per-item modifiers to existing Valheim equipment, creating a more varied and unpredictable gear progression.
 
 ## Installation
+Either:
+> [Install from thunderstore.](https://thunderstore.io/c/valheim/p/Izzemi_dev/Runecarved/)
+Requirements: BepInExPack Valheim and Jötunn (both are installed automatically if you use a mod manager). 
+- Install r2modman or the Thunderstore Mod Manager.
+- Select Valheim, create a profile, and search for this mod.
+- Click Install with dependencies, then Start modded.
+> [Download one of the releases from the repo page.](https://github.com/w-modz/Valheim-RPG-Items-Mod/releases)
+- Install BepInEx for Valheim by extracting BepInExPack Valheim into your Valheim folder (usually C:\Program Files (x86)\Steam\steamapps\common\Valheim). Run the game once, then close it.
+- Install Jötunn by placing Jotunn.dll in Valheim\BepInEx\plugins\.
+- Put the .dll file in Valheim\BepInEx\plugins\. A subfolder such as plugins\ModName\ also works.
+- Launch Valheim through Steam.
 
-> **Note:** there is no release and no mod manager (Thunderstore) page for this mod yet, so it has to be built from source.
+## Building
 
 Requirements: Windows, a Valheim install with BepInEx and [Jötunn](https://valheim-modding.github.io/Jotunn/) installed (for example through a mod manager profile), and the .NET SDK (or Visual Studio).
 
@@ -25,7 +36,7 @@ Requirements: Windows, a Valheim install with BepInEx and [Jötunn](https://valh
    </Project>
    ```
 
-3. Build `IzzemisMod.sln` (for example `dotnet build IzzemisMod.sln`, or Build in Visual Studio). The build copies the plugin DLL into `MOD_DEPLOYPATH`.
+3. Build `Runecarved.sln` (for example `dotnet build Runecarved.sln`, or Build in Visual Studio). The build copies the plugin DLL into `MOD_DEPLOYPATH`.
 4. Start Valheim.
 
 ## Current features
@@ -35,7 +46,7 @@ Requirements: Windows, a Valheim install with BepInEx and [Jötunn](https://valh
 - Modifier effects cover combat, defense, movement, resource use, ranged attacks, magic, summons, and skills.
 - Persistent item data, modifier and rarity tooltips, rarity visuals, and preservation of item upgrades through crafting.
 
-For modifier pools, console commands, rune effects, and drop details, see the [mod description](../../MOD_DESCRIPTION.md).
+For modifier pools, console commands, rune effects, and drop details, see the [mod description](MOD_DESCRIPTION.md).
 
 ## Not implemented yet
 

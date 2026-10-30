@@ -1,6 +1,6 @@
 # Mod description
 
-Izzemi’s Mod adds rarity tiers and per-item modifiers to existing Valheim equipment. This document describes the gameplay systems in detail. For installation and project information, see the [README](README.md).
+Runecarved adds rarity tiers and per-item modifiers to existing Valheim equipment. This document describes the gameplay systems in detail. For installation and project information, see the [README](README.md).
 
 ## Rarity tiers
 

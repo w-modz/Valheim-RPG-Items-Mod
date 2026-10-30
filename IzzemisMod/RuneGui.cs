@@ -5,7 +5,7 @@ using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     internal static class RuneGui
     {
@@ -55,7 +55,7 @@ namespace IzzemisMod
                 InventoryGui.instance.Hide();
             }
 
-            GameObject root = new GameObject("IzzemisModRuneGui", typeof(RectTransform));
+            GameObject root = new GameObject("RunecarvedRuneGui", typeof(RectTransform));
             root.transform.SetParent(GUIManager.CustomGUIFront.transform, false);
             RectTransform rect = (RectTransform)root.transform;
             rect.anchorMin = Vector2.zero;
@@ -114,7 +114,7 @@ namespace IzzemisMod
             }
 
             Transform parent = __instance.m_player;
-            if (parent.Find("IzzemisModRuneButton") != null)
+            if (parent.Find("RunecarvedRuneButton") != null)
             {
                 return;
             }
@@ -127,7 +127,7 @@ namespace IzzemisMod
                 new Vector2(100f, -30f),
                 180f,
                 45f);
-            button.name = "IzzemisModRuneButton";
+            button.name = "RunecarvedRuneButton";
             button.GetComponent<Button>().onClick.AddListener(RuneGui.Open);
         }
     }
@@ -143,10 +143,10 @@ namespace IzzemisMod
                 return;
             }
 
-            Transform button = __instance.m_player.Find("IzzemisModRuneButton");
+            Transform button = __instance.m_player.Find("RunecarvedRuneButton");
             if (button == null)
             {
-                button = __instance.m_container.Find("IzzemisModRuneButton");
+                button = __instance.m_container.Find("RunecarvedRuneButton");
             }
 
             if (button == null)

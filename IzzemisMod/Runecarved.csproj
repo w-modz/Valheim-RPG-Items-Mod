@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net48</TargetFramework>
-    <RootNamespace>IzzemisMod</RootNamespace>
+    <RootNamespace>Runecarved</RootNamespace>
     <AssemblyName>IzzemisMod</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

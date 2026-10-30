@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     [HarmonyPatch(
         typeof(InventoryGui),

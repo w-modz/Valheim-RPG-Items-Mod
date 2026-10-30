@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     // All three effects are read from the bow or crossbow, since ammo never carries modifiers.
     [HarmonyPatch(typeof(Projectile), nameof(Projectile.Setup))]

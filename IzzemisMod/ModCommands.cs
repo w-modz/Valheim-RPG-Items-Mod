@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Jotunn.Entities;
 using Jotunn.Managers;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     internal static class ModCommands
     {

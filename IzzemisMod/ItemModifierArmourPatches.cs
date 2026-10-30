@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     // Armour modifiers stack across every equipped armour piece.
     internal static class ArmourModifiers

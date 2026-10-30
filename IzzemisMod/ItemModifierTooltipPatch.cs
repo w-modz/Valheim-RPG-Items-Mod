@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using HarmonyLib;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     [HarmonyPatch(typeof(InventoryGrid), "CreateItemTooltip")]
     internal static class ItemModifierTooltipPatch

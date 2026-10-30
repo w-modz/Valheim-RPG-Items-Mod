@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     internal static class RuneEffects
     {

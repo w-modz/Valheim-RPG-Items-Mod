@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     internal static class ItemRarityVisuals
     {
-        private const string GlowObjectName = "IzzemisModRarityGlow";
+        private const string GlowObjectName = "RunecarvedRarityGlow";
         private const float DropGlowRange = 4.5f;
         private const float DropGlowIntensity = 1.5f;
         private const float EquippedGlowRange = 4f;

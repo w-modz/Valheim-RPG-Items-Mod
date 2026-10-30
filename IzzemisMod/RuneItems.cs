@@ -6,7 +6,7 @@ using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     internal static class RuneItems
     {

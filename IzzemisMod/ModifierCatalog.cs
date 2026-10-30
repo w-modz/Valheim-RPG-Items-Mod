@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     [System.Flags]
     internal enum ModifierItemCategory

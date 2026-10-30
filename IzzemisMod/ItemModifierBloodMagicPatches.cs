@@ -1,7 +1,7 @@
 using System;
 using HarmonyLib;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     internal static class BloodMagicModifierHelpers
     {

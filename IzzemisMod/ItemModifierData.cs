@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
-namespace IzzemisMod
+namespace Runecarved
 {
     // Stores one modifier's identifier and rolled value on an item.
     [Serializable]
