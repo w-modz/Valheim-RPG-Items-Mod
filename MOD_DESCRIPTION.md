@@ -112,9 +112,20 @@ Runes drop from a fixed list of enemies (any enemy not listed drops no runes). E
 - **Stars:** the chance is multiplied once per star (1 star = x3, 2 stars = x9 by default).
 - **Bosses** ignore the tables and drop guaranteed runes, one per player within 200 m: Eikthyr drops Midgard, The Elder Vanaheim, Bonemass Alfheim, and Moder Jotunheim. Yagluth, The Queen, and Fader each drop a Rune of Valheim per player, rolled separately, with a random item type and a random modifier at its maximum value.
 
+The **Rune Drop Rate** world modifier appears in the world settings screen when Runecarved is installed. It is saved per world, so existing worlds default to 1x until changed. It affects normal-enemy rune chances; boss drops remain guaranteed and are not affected.
+
+Rune drop chance is multiplied by the selected rate:
+
+| Setting | Multiplier |
+| --- | --- |
+| 1x | 1x |
+| 3x | 3x |
+| 5x | 5x |
+| 10x | 10x |
+| 20x | 20x |
+
 Configuration (`BepInEx/config/com.izzemi.izzemismod.cfg`, section `Rune Drops`):
 
 | Option | Default | Effect |
 | --- | --- | --- |
-| `DropRateMultiplier` | 1 | Global multiplier for all rune drops, including bosses. 0 disables rune drops. |
 | `StarMultiplier` | 3 | Chance multiplier per enemy star. 1 disables the star bonus. |

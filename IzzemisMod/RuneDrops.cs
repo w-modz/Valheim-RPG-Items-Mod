@@ -123,18 +123,10 @@ namespace Runecarved
             { "Fader", null }
         };
 
-        private static ConfigEntry<float> dropRateMultiplier;
         private static ConfigEntry<float> starMultiplier;
 
         public static void Bind(ConfigFile config)
         {
-            dropRateMultiplier = config.Bind(
-                "Rune Drops",
-                "DropRateMultiplier",
-                1f,
-                new ConfigDescription(
-                    "Global multiplier for all rune drop chances. 1 = default, 0 = no rune drops, 2 = double.",
-                    new AcceptableValueRange<float>(0f, 100f)));
             starMultiplier = config.Bind(
                 "Rune Drops",
                 "StarMultiplier",
@@ -157,7 +149,7 @@ namespace Runecarved
                 return;
             }
 
-            float globalMultiplier = dropRateMultiplier != null ? dropRateMultiplier.Value : 1f;
+            float globalMultiplier = RuneDropModifier.GetMultiplier();
             float starFactor = Mathf.Pow(starMultiplier != null ? starMultiplier.Value : 3f, Mathf.Max(0, stars));
             globalMultiplier *= starFactor;
             if (globalMultiplier <= 0f ||
@@ -184,11 +176,6 @@ namespace Runecarved
         }
         private static void AddBossDrops(CharacterDrop source, string runeName, List<KeyValuePair<GameObject, int>> drops)
         {
-            if (dropRateMultiplier != null && dropRateMultiplier.Value <= 0f)
-            {
-                return;
-            }
-
             Vector3 position = source.transform.position;
             int players = Mathf.Max(1, Player.GetPlayersInRangeXZ(position, 200f));
             if (runeName == null)
