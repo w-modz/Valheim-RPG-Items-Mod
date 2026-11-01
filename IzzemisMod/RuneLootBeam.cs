@@ -34,12 +34,7 @@ namespace Runecarved
                 return;
             }
 
-            if (beamMaterial == null)
-            {
-                beamMaterial = CreateBeamMaterial();
-            }
-
-            if (beamMaterial == null)
+            if (GetSharedMaterial() == null)
             {
                 return;
             }
@@ -138,7 +133,17 @@ namespace Runecarved
             return line;
         }
 
-        private Material CreateBeamMaterial()
+        public static Material GetSharedMaterial()
+        {
+            if (beamMaterial == null)
+            {
+                beamMaterial = CreateBeamMaterial();
+            }
+
+            return beamMaterial;
+        }
+
+        private static Material CreateBeamMaterial()
         {
             Shader shader = Shader.Find("Legacy Shaders/Particles/Additive");
             if (shader == null)

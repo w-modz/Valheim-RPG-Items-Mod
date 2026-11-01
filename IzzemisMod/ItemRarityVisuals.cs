@@ -14,7 +14,8 @@ namespace Runecarved
         public static bool TryGetRarity(ItemDrop.ItemData item, out ItemRarityDefinition rarity)
         {
             rarity = null;
-            return ItemModifierDataStore.TryGetRarityId(item, out string rarityId) &&
+            return item != null &&
+                ItemModifierDataStore.TryGetRarityId(item, out string rarityId) &&
                 ItemRarityCatalog.TryGet(rarityId, out rarity);
         }
 
@@ -33,10 +34,12 @@ namespace Runecarved
                     new Vector3(0f, 0.25f, 0f),
                     DropGlowRange,
                     DropGlowIntensity);
+                RarityItemParticles.Apply(itemDrop, rarity.GlowColor);
             }
             else
             {
                 SetGlow(itemDrop.transform, null, Vector3.zero, 0f, 0f);
+                RarityItemParticles.Apply(itemDrop, null);
             }
         }
 
@@ -46,6 +49,8 @@ namespace Runecarved
             {
                 return;
             }
+
+            EquippedRarityParticles.Ensure(humanoid);
 
             ItemRarityDefinition highestRarity = null;
             var inventory = humanoid.GetInventory();
