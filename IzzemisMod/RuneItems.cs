@@ -29,10 +29,22 @@ namespace Runecarved
         private const string PlaceholderBasePrefab = "Ruby";
         private const string DestructiveColor = "#E03030";
         private const string UpgradeColor = "#2E8B57";
+        private static readonly Color RuneYellow = new Color(1f, 0.85f, 0.3f);
+        private static readonly Color RuneRed = new Color(224f / 255f, 48f / 255f, 48f / 255f);
 
         private static string Red(string text) => $"<color={DestructiveColor}>{text}</color>";
 
         private static string Up(string text) => $"<color={UpgradeColor}>{text}</color>";
+
+        private static Color RarityGlowColor(string id)
+        {
+            if (!ItemRarityCatalog.TryGet(id, out ItemRarityDefinition rarity))
+            {
+                throw new InvalidOperationException($"Unknown item rarity '{id}'.");
+            }
+
+            return rarity.GlowColor;
+        }
 
         private static string Rarity(string id)
         {
@@ -44,35 +56,50 @@ namespace Runecarved
         {
             new RuneDefinition("IzzemisMod_RuneAsgard", "Rune of Asgard",
                 Red("Removes") + " one random modifier from an item and adds one new random modifier.",
-                new Color(1f, 0.85f, 0.3f)),
+                RuneYellow),
             new RuneDefinition("IzzemisMod_RuneMidgard", "Rune of Midgard",
                 Up("Upgrades") + " a normal item to " + Rarity("magic") + " and adds one random modifier.",
-                new Color(0.6f, 0.45f, 0.25f)),
+                RarityGlowColor("magic")),
             new RuneDefinition("IzzemisMod_RuneVanaheim", "Rune of Vanaheim",
                 Up("Upgrades") + " a " + Rarity("magic") + " item to " + Rarity("rare") + " and adds one random modifier.",
-                new Color(0.3f, 0.8f, 0.35f)),
+                RarityGlowColor("rare")),
             new RuneDefinition("IzzemisMod_RuneAlfheim", "Rune of Alfheim",
                 Up("Upgrades") + " a " + Rarity("rare") + " item to " + Rarity("epic") + " and adds one random modifier.",
-                new Color(0.95f, 0.95f, 0.8f)),
+                RarityGlowColor("epic")),
             new RuneDefinition("IzzemisMod_RuneJotunheim", "Rune of Jotunheim",
                 "Adds an additional modifier to an " + Rarity("epic") + " item, up to 4.",
-                new Color(0.4f, 0.7f, 1f)),
+                RarityGlowColor("epic")),
             new RuneDefinition("IzzemisMod_RuneMuspelheim", "Rune of Muspelheim",
                 Red("Destroys") + " an item of " + Rarity("magic") + " rarity or higher and grants the corresponding rune.",
-                new Color(1f, 0.35f, 0.1f)),
+                RuneRed),
             new RuneDefinition("IzzemisMod_RuneNiflheim", "Rune of Niflheim",
                 "Randomizes the values of all modifiers on an item.",
-                new Color(0.6f, 0.9f, 1f)),
+                RuneYellow),
             new RuneDefinition("IzzemisMod_RuneHel", "Rune of Hel",
                 "Randomly modifies or " + Red("destroys") + " an " + Rarity("epic") + " item. Items modified cannot be further altered by other runes.",
-                new Color(0.3f, 0.1f, 0.4f)),
+                RuneRed),
             new RuneDefinition("IzzemisMod_RuneNidavellir", "Rune of Nidavellir",
                 Red("Destroys") + " an item and grants a Rune of Valheim holding one random modifier of the sacrificed item.",
-                new Color(0.55f, 0.55f, 0.6f)),
+                RuneRed),
             new RuneDefinition("IzzemisMod_RuneValheim", "Rune of Valheim",
                 "Applies its stored modifier to an item of the same type as the sacrificed item. Only obtainable via the Rune of Nidavellir.",
-                new Color(1f, 1f, 1f)),
+                RarityGlowColor("epic")),
         };
+
+        public static bool TryGetRuneColor(string prefabName, out Color color)
+        {
+            foreach (RuneDefinition rune in Runes)
+            {
+                if (rune.PrefabName == prefabName)
+                {
+                    color = rune.Color;
+                    return true;
+                }
+            }
+
+            color = default(Color);
+            return false;
+        }
 
         private const string BundleResource = "Bundles.runebundle";
         private const string BundlePrefabPath = "assets/rune/rune.prefab";
@@ -186,6 +213,7 @@ namespace Runecarved
                 {
                     ApplyModel(customItem.ItemPrefab, model);
                 }
+                RuneDropFeedback.AddGlow(customItem.ItemPrefab, rune.Color);
                 if (rune.PrefabName == "IzzemisMod_RuneValheim")
                 {
                     customItem.ItemDrop.m_itemData.m_shared.m_maxStackSize = 1;

@@ -114,6 +114,8 @@ Runes drop from a fixed list of enemies (any enemy not listed drops no runes). E
 
 The **Rune Drop Rate** world modifier appears in the world settings screen when Runecarved is installed. It is saved per world, so existing worlds default to 1x until changed. It affects normal-enemy rune chances; boss drops remain guaranteed and are not affected.
 
+Rune items glow in the world and have a colored loot beam with matching rising particles. They play a short ward activation sound when dropped.
+
 Rune drop chance is multiplied by the selected rate:
 
 | Setting | Multiplier |
