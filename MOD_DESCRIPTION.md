@@ -89,7 +89,7 @@ The optional slot targets the equipped item. Supported slots are `weapon`, `bow`
 
 ## Runes
 
-Runes are used from the rune window, opened with the **Runes** button under the inventory (the hotkey is temporarily disabled). Pick an item and a rune, then apply: a 3-second progress bar runs and can be cancelled by clicking again. The rune is consumed unless the vanilla `nocost` cheat is on. Runes have no crafting recipe; they drop from enemies (see [Rune drops](#rune-drops)) or can be spawned with the console, e.g. `spawn IzzemisMod_RuneAsgard`. Ammo (arrows and bolts) cannot receive rarity, modifiers, or runes.
+Runes are used from the rune window, opened with the **Runes** button under the inventory (the hotkey is temporarily disabled). Pick an item and a rune, then apply: a 3-second progress bar runs and can be cancelled by clicking again. The rune is consumed unless the vanilla `nocost` cheat is on. Runes have no crafting recipe; they drop from enemies (see [Rune drops](#rune-drops)), some can be purchased from Hildir, or they can be spawned with the console, e.g. `spawn IzzemisMod_RuneAsgard`. Ammo (arrows and bolts) cannot receive rarity, modifiers, or runes.
 
 | Rune | Effect |
 | --- | --- |
@@ -103,6 +103,19 @@ Runes are used from the rune window, opened with the **Runes** button under the 
 | Hel | Epic items only. One of four equal outcomes: destroys the item, removes a modifier, adds a bonus 5th modifier, or raises all non-fixed modifier values by 20% (may exceed normal maximums; fixed values such as resistances are unchanged). The item is then "Touched by Hel": only Nidavellir and Muspelheim can be used on it. It can still be upgraded at crafting stations, keeping its rarity and modifiers. |
 | Nidavellir | Destroys an item with modifiers and grants a Rune of Valheim holding one of its modifiers at its exact value. |
 | Valheim | Only obtained from Nidavellir or the three late-game bosses (stack size 1). Applies its modifier to an item of the same type as the sacrificed item that has a rarity, a free modifier slot, and does not already have that modifier. |
+
+### Hildir's rune shop
+
+Each purchase gives one rune. Quest offers unlock independently when the corresponding chest is returned to Hildir, including chests returned before installing this version.
+
+| Requirement | Runes | Price each |
+| --- | --- | --- |
+| None | Asgard, Midgard | 500 coins |
+| Smouldering Tomb chest | Vanaheim, Muspelheim | 1,000 coins |
+| Howling Cavern chest | Alfheim, Niflheim | 1,500 coins |
+| Sealed Tower chest | Jotunheim, Nidavellir | 2,000 coins |
+
+Hel and Valheim are not sold.
 
 ## Rune drops
 
