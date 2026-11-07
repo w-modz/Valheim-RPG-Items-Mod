@@ -89,7 +89,7 @@ The optional slot targets the equipped item. Supported slots are `weapon`, `bow`
 
 ## Runes
 
-Runes are used from the rune window, opened with the **Runes** button under the inventory (the hotkey is temporarily disabled). Pick an item and a rune, then apply: a 3-second progress bar runs and can be cancelled by clicking again. The rune is consumed unless the vanilla `nocost` cheat is on. Runes have no crafting recipe; they drop from enemies (see [Rune drops](#rune-drops)), some can be purchased from Hildir, or they can be spawned with the console, e.g. `spawn IzzemisMod_RuneAsgard`. Ammo (arrows and bolts) cannot receive rarity, modifiers, or runes.
+Runes are used from the rune window, opened with the **Runes** button under the inventory (the hotkey is temporarily disabled). Pick an item and a rune, then apply: a 3-second progress bar runs and can be cancelled by clicking again. The rune is consumed unless the vanilla `nocost` cheat is on. Runes have no crafting recipe; they drop from enemies (see [Rune drops](#rune-drops)), appear in some loot chests, can be purchased from Hildir, or can be spawned with the console, e.g. `spawn IzzemisMod_RuneAsgard`. Ammo (arrows and bolts) cannot receive rarity, modifiers, or runes.
 
 | Rune | Effect |
 | --- | --- |
@@ -116,6 +116,14 @@ Each purchase gives one rune. Quest offers unlock independently when the corresp
 | Sealed Tower chest | Jotunheim, Nidavellir | 2,000 coins |
 
 Hel and Valheim are not sold.
+
+### Chest loot
+
+Newly generated loot chests in the Black Forest, Swamp, Mountain, Plains, Mistlands and Ashlands have a 25% chance of extra runes. Each rune is selected independently using the same biome-specific rune weights as enemy drops. Meadows, Ocean and Deep North chests have no rune loot; Valheim runes are excluded. The enemy rune drop-rate modifier does not affect chest loot.
+
+The **Chest Rune Rate** world modifier is saved per world and defaults to 1x, including in existing worlds. It sets the number of runes in a successful chest: 1x = 1 rune, 2x = 2 runes, 3x = 3 runes, and 4x = 4 runes. The chance remains 25% at every setting. It does not affect enemy or boss drops.
+
+Existing generated chests and player-built chests are unchanged. If a chest runs out of room for runes, its existing contents are preserved.
 
 ## Rune drops
 

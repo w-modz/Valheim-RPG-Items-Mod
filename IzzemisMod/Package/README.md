@@ -6,6 +6,8 @@ Built on the [Jotunn mod stub](https://github.com/Valheim-Modding/JotunnModStub)
 
 Runecarved adds rarity tiers and per-item modifiers to existing Valheim equipment, creating a more varied and unpredictable gear progression.
 
+## AI use disclosure
+This mod was partially created with the assistance of generative AI (GitHub Copilot coding agents). All changes were reviewed and tested by the author. All assets, sprites, models, and artwork were created **without** any AI assistance.
 ## Installation
 Either:
 > [Install from thunderstore.](https://thunderstore.io/c/valheim/p/Izzemi_dev/Runecarved/)

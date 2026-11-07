@@ -38,6 +38,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyMetadata Include="AI_Assisted_Creation" Value="This assembly was partially created with the assistance of coding agents." />
+    <AssemblyMetadata Include="AI_Model_Vendor" Value="GitHub Copilot (OpenAI/Anthropic models)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="README.md" />
