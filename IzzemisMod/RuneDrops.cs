@@ -125,6 +125,37 @@ namespace Runecarved
 
         private static ConfigEntry<float> starMultiplier;
 
+        public static string SelectChestRune(DropGroup group, double roll)
+        {
+            if (!BaseChances.TryGetValue(group, out float[] weights))
+            {
+                return null;
+            }
+
+            double total = 0d;
+            for (int i = 0; i < RuneOrder.Length && i < weights.Length; i++)
+            {
+                total += weights[i];
+            }
+
+            if (total <= 0d)
+            {
+                return null;
+            }
+
+            double selected = roll * total;
+            for (int i = 0; i < RuneOrder.Length && i < weights.Length; i++)
+            {
+                selected -= weights[i];
+                if (weights[i] > 0f && selected < 0d)
+                {
+                    return RuneOrder[i];
+                }
+            }
+
+            return null;
+        }
+
         public static void Bind(ConfigFile config)
         {
             starMultiplier = config.Bind(
@@ -149,7 +180,7 @@ namespace Runecarved
                 return;
             }
 
-            float globalMultiplier = RuneDropModifier.GetMultiplier();
+            float globalMultiplier = RuneDropModifier.Enemy.GetMultiplier();
             float starFactor = Mathf.Pow(starMultiplier != null ? starMultiplier.Value : 3f, Mathf.Max(0, stars));
             globalMultiplier *= starFactor;
             if (globalMultiplier <= 0f ||
