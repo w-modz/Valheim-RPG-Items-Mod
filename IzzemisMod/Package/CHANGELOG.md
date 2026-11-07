@@ -11,8 +11,7 @@
 - Hildir now sells runes.
 
 ### Changed
-- Increased rune drop rates for difficult enemies.
-- The mod is now called **Runecarved** (previously Izzemi's Mod). Existing items and configuration keep working.
+- Adjusted rune drop rates for enemies.
 
 ## 1.0.0
 
