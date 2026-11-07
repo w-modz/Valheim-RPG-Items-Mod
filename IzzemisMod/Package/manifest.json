@@ -1,7 +1,7 @@
 {
   "name": "Runecarved",
   "description": "Adds rarity tiers, per-item modifiers, and runes to Valheim equipment.",
-  "version_number": "1.0.0",
+  "version_number": "1.1.0",
   "website_url": "https://github.com/w-modz/Valheim-Runecarved",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2333",
