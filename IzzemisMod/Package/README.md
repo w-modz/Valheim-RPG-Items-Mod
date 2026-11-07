@@ -15,7 +15,7 @@ Requirements: BepInExPack Valheim and Jötunn (both are installed automatically 
 - Install r2modman or the Thunderstore Mod Manager.
 - Select Valheim, create a profile, and search for this mod.
 - Click Install with dependencies, then Start modded.
-> [Download one of the releases from the repo page.](https://github.com/w-modz/Valheim-RPG-Items-Mod/releases)
+> [Download one of the releases from the repo page.](https://github.com/w-modz/Valheim-Runecarved/releases)
 - Install BepInEx for Valheim by extracting BepInExPack Valheim into your Valheim folder (usually C:\Program Files (x86)\Steam\steamapps\common\Valheim). Run the game once, then close it.
 - Install Jötunn by placing Jotunn.dll in Valheim\BepInEx\plugins\.
 - Put the .dll file in Valheim\BepInEx\plugins\. A subfolder such as plugins\ModName\ also works.
